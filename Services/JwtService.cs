@@ -8,7 +8,7 @@ namespace ap_auth_server.Services
     public class JwtService
     {
         // Clave secreta que se asignará al token
-        private readonly static string _secretKey = "JWTSecretKey";
+        private readonly static string _secretKey = "SecretKey";
 
         public static string Encode(Dictionary<string, object> payload)
         {

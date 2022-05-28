@@ -16,80 +16,73 @@ namespace ap_auth_server.Controllers
 
     public class AuthController : ControllerBase
     {
-
+        //Lectura del contexto de la base de datos
         private readonly ap_dbContext _context;
-        private readonly JWTSettings _jwtsettings;
 
-        public AuthController(ap_dbContext context, IOptions<JWTSettings> jwtsettings)
+        //Constructor
+        public AuthController(ap_dbContext context)
         {
             _context = context;
-            _jwtsettings = jwtsettings.Value;
         }
 
-
+        //Post Login
         [HttpPost("login")]
-        public async Task<ActionResult> Login([FromBody] User user)
+        public IActionResult Login(string email, string password)
         {
+            User user = new User();
+
             try
             {
-                user = await _context.Users.Where(u => u.Email == user.Email && u.Password == user.Password).FirstOrDefault();
-
-                UserWithToken userWithToken = null;
-
-                if (user != null)
+                if (_context == null)
                 {
-                    Token token = GenerateRefreshToken();
-                    user.Token.Add(Token);
-                    await _context.SaveChangesAsync();
-
-                    userWithToken = new UserWithToken(user);
-                    userWithToken.AccessToken = token.Token;
+                    return BadRequest("Fill all fields");
                 }
-
-                if (userWithToken != null)
+                else
                 {
-                    return NotFound();
-                }
+                    if (user.Email != email)
+                    {
+                        return BadRequest("Account doesn't exists");
+                    }
+                    else
+                    {
+                        if (user.Password != password)
+                        {
+                            return BadRequest(StatusCode(400, "Invalid credentials"));
+                        }
+                    }
 
-                userWithToken.AccessToken = GenerateAccessToken(user.Id);
-                return userWithToken;
+                    if (user.Email == email && user.Password == password)
+                    {
+                        return Ok("Successful");
+                    }
+                }
             }
 
             catch (Exception ex)
             {
                 return Content("An error occurred: " + ex.Message);
             }
+
+            return Ok();
         }
 
 
         [HttpPost("signup")]
-        public async Task<ActionResult<UserWithToken>> SignUp([FromBody] User user)
+        public async Task<ActionResult> SignUp([FromBody] User user)
         {
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            UserWithToken userWithToken = null;
-
-            if (user != null)
-            {
-                Token token = GenerateRefreshToken();
-                user.Tokens.Add(token);
-                await _context.SaveChangesAsync();
-
-                userWithToken = new UserWithToken(user);
-                userWithToken.RefreshToken = token.Token;
-            }
-
-            if (userWithToken == null)
-            {
-                return NotFound();
-            }
-
-            userWithToken.AccessToken = GenerateAccessToken(user.Id);
-            return userWithToken;
+            return null;
         }
 
-        private Token GenerateRefreshToken()
+        [HttpPut("recovery")]
+        public async Task<ActionResult> RecoveryPassword(string email)
+        {
+            return null;
+        }
+
+        /*private Token GenerateRefreshToken()
         {
             Token token = new Token();
 
@@ -122,10 +115,7 @@ namespace ap_auth_server.Controllers
             return tokenHandler.WriteToken(token);
         }
 
-
-
-
-        /*private IActionResult BuildToken(User user)
+        private IActionResult BuildToken(User user)
         {
             var claims = new[]
             {
@@ -151,7 +141,7 @@ namespace ap_auth_server.Controllers
                 token = new JwtSecurityTokenHandler().WriteToken(token),
                 expiration = expiration
             });
-        }*/
+        }
         
         //LOGIN
         /*using (ap_dbContext db = new ap_dbContext())

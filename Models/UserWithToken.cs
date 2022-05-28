@@ -25,3 +25,5 @@
             this.CreatedAt = user.CreatedAt;
             this.ProfileId = user.ProfileId;
         }
+    }
+}

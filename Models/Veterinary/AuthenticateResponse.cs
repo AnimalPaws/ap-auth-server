@@ -1,29 +1,26 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace ap_auth_server.Models.Users
+﻿namespace ap_auth_server.Models.Veterinary
 {
-    public class RegisterRequest
+    public class AuthenticateResponse
     {
-        [Required]
+        public int Id { get; set; }
         public string FirstName { get; set; }
         public string MiddleName { get; set; }
-        [Required]
         public string Surname { get; set; }
-        [Required]
         public string LastName { get; set; }
-        [Required]
         public string Sex { get; set; }
-        [Required]
         public string Email { get; set; }
-        [Required]
         public string Password { get; set; }
         public string PhoneNumber { get; set; }
-        [Required]
         public DateTime Birthdate { get; set; }
-        [Required]
         public string Department { get; set; }
-        [Required]
         public string City { get; set; }
+        public bool? PhoneNumberVerified { get; set; }
+        public bool? IsBlocked { get; set; }
+        public bool? IsRestricted { get; set; }
         public DateTime? CreatedAt { get; set; }
+        public int? ProfileId { get; set; }
+
+        public virtual UserProfile Profile { get; set; }
+        public string Token { get; internal set; }
     }
 }

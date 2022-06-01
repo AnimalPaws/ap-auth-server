@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ap_auth_server.Models.Users
+namespace ap_auth_server.Models.Veterinary
 {
     public class RegisterRequest
     {

@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using ap_auth_server.Entities.Foundation;
+using ap_auth_server.Entities.User;
+using ap_auth_server.Entities.Veterinary;
+using Microsoft.EntityFrameworkCore;
 
 namespace ap_auth_server.Helpers
 {
@@ -18,5 +21,7 @@ namespace ap_auth_server.Helpers
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<Veterinary> Veterinaries { get; set; }
+        public DbSet<Foundation> Foundations { get; set; }
     }
 }

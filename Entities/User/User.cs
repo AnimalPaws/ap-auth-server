@@ -1,8 +1,8 @@
-﻿using ap_auth_server.Entities.User;
+﻿using System.Text.Json.Serialization;
 
-namespace ap_auth_server.Models.Users
+namespace ap_auth_server.Entities.User
 {
-    public class AuthenticateResponse
+    public class User
     {
         public int? Id { get; set; }
         public string? FirstName { get; set; }
@@ -25,6 +25,8 @@ namespace ap_auth_server.Models.Users
         public int? ProfileId { get; set; }
 
         public virtual UserProfile Profile { get; set; }
-        public string Token { get; internal set; }
+
+        [JsonIgnore]
+        public string PasswordHash { get; set; }
     }
 }

@@ -8,6 +8,7 @@ using System.Text;
 using ap_auth_server.Models;
 using ap_auth_server.Services;
 using ap_auth_server.Helpers;
+using ap_auth_server.Entities.User;
 
 namespace ap_auth_server.Authorization
 {

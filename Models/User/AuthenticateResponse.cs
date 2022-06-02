@@ -1,8 +1,8 @@
-﻿using System.Text.Json.Serialization;
+﻿using ap_auth_server.Entities.User;
 
-namespace ap_auth_server.Entities.User
+namespace ap_auth_server.Models.Users
 {
-    public class User
+    public class AuthenticateResponse
     {
         public int? Id { get; set; }
         public string? First_Name { get; set; }
@@ -12,8 +12,6 @@ namespace ap_auth_server.Entities.User
         public string? Username { get; set; }
         public string? Sex { get; set; }
         public string? Email { get; set; }
-        [JsonIgnore]
-        public string Password { get; set; }
         public string? Phone_Number { get; set; }
         public DateTime Birthdate { get; set; }
         public string? Department { get; set; }
@@ -24,9 +22,9 @@ namespace ap_auth_server.Entities.User
         public bool? Is_Restricted { get; set; }
         public DateTime? Created_At { get; set; }
         public DateTime? Updated_At { get; set; }
-        public int? Profile_Id { get; set; }
+        //public int? Profile_Id { get; set; }
 
         //public virtual UserProfile Profile { get; set; }
-
+        public string Token { get; set; }
     }
 }

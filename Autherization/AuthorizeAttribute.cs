@@ -1,4 +1,5 @@
 ﻿using ap_auth_server.Autherization;
+using ap_auth_server.Entities.User;
 using ap_auth_server.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

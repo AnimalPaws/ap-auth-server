@@ -18,7 +18,7 @@ namespace ap_auth_server.Entities.Veterinary
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public int? ProfileId { get; set; }
-        public virtual VeterinaryProfile Profile { get; set; }
+        //public virtual VeterinaryProfile Profile { get; set; }
 
         [JsonIgnore]
         public string PasswordHash { get; set; }

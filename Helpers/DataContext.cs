@@ -8,8 +8,7 @@ namespace ap_auth_server.Helpers
     public class DataContext : DbContext
     {
         protected readonly IConfiguration Configuration;
-
-        public DataContext(IConfiguration configuration)
+        public DataContext(IConfiguration configuration, DbContextOptions options) : base (options)
         {
             Configuration = configuration;
         }
@@ -20,8 +19,8 @@ namespace ap_auth_server.Helpers
             options.UseMySQL(Configuration.GetConnectionString("APDatabase"));
         }
 
-        public DbSet<User> Users { get; set; }
-        public DbSet<Veterinary> Veterinaries { get; set; }
-        public DbSet<Foundation> Foundations { get; set; }
+        public DbSet<User> User { get; set; }
+        public DbSet<Veterinary> Veterinary { get; set; }
+        public DbSet<Foundation> Foundation { get; set; }
     }
 }

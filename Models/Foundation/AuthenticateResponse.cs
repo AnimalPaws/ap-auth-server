@@ -1,4 +1,6 @@
-﻿namespace ap_auth_server.Models.Foundation
+﻿using ap_auth_server.Entities.User;
+
+namespace ap_auth_server.Models.Foundation
 {
     public class AuthenticateResponse
     {

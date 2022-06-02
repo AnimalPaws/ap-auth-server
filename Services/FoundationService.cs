@@ -2,27 +2,27 @@
 using BCryptNet = BCrypt.Net.BCrypt;
 using ap_auth_server.Helpers;
 using ap_auth_server.Authorization;
-using ap_auth_server.Models.Users;
-using ap_auth_server.Entities.User;
+using ap_auth_server.Models.Foundation;
+using ap_auth_server.Entities.Foundation;
 
 namespace ap_auth_server.Services
 {
-    public interface IUserService
+    public interface IFoundationService
     {
         AuthenticateResponse Authenticate(AuthenticateRequest model);
         void Register(RegisterRequest model);
         /*IEnumerable<User> GetAll();*/
-        User GetById(int id);
+        Foundation GetById(int id);
         /*void Update(int id, UpdateRequest model);
         void Delete(int id);*/
     }
-    public class UserService : IUserService
+    public class FoundationService : IFoundationService
     {
         private DataContext _context;
         private IJwtUtils _jwtUtils;
         private readonly IMapper _mapper;
 
-        public UserService(
+        public FoundationService(
             DataContext context, 
             IJwtUtils jwtUtils, 
             IMapper mapper)
@@ -34,52 +34,52 @@ namespace ap_auth_server.Services
 
         public AuthenticateResponse Authenticate(AuthenticateRequest model)
         {
-            var user = _context.User.SingleOrDefault(x => x.Email == model.Username);
+            var foundation = _context.Foundation.SingleOrDefault(x => x.Email == model.Username);
 
-            if(model.Username != user.Email)
+            if(model.Username != foundation.Email)
             {
                 throw new AppException("That account doesn't exists");
             }
 
-            if(user == null || model.Password != user.Password)
+            if(foundation == null || !BCryptNet.Verify(model.Password, foundation.PasswordHash))
             {
                 throw new AppException("Invalid credentials, please try again");
             }
 
-            var response = _mapper.Map<AuthenticateResponse>(user);
-            response.Token = _jwtUtils.GenerateToken(user);
+            var response = _mapper.Map<AuthenticateResponse>(foundation);
+            response.Token = _jwtUtils.GenerateToken(foundation);
             return response;
         }
         
         public void Register(RegisterRequest model)
         {
-            if(_context.User.Any(x => x.Email == model.Email))
+            if(_context.Foundation.Any(x => x.Email == model.Email))
             {
                 throw new AppException("An account with that email address already exists.");
             }
 
-            if(_context.User.Any(x => x.Username == model.Username))
+            if(_context.Foundation.Any(x => x.Name == model.Name))
             {
-                throw new AppException("Username {0} is already taken", model.Username);
+                throw new AppException("Name {0} is already taken", model.Name);
             }
 
-            var user = _mapper.Map<User>(model);
-            user.Password = BCryptNet.HashPassword(model.Password);
-            user.Created_At = DateTime.UtcNow;
-            _context.User.Add(user);
+            var foundation = _mapper.Map<Foundation>(model);
+            foundation.PasswordHash = BCryptNet.HashPassword(model.Password);
+            foundation.CreatedAt = DateTime.UtcNow;
+            _context.Foundation.Add(foundation);
             _context.SaveChanges();
         }
 
-        public User GetById(int id)
+        public Foundation GetById(int id)
         {
             return getUser(id);
         }
 
-        private User getUser(int id)
+        private Foundation getUser(int id)
         {
-            var user = _context.User.Find(id);
-            if (user == null) throw new KeyNotFoundException("User not found");
-            return user;
+            var foundation = _context.Foundation.Find(id);
+            if (foundation == null) throw new KeyNotFoundException("User not found");
+            return foundation;
         }
     }
 }

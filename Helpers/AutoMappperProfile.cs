@@ -1,4 +1,8 @@
-﻿namespace ap_auth_server.Helpers
+﻿using ap_auth_server.Entities.User;
+using ap_auth_server.Models.Foundation;
+using AutoMapper;
+
+namespace ap_auth_server.Helpers
 {
     public class AutoMapperProfile : Profile
     {
@@ -24,3 +28,4 @@
                 ));
         }
     }
+}

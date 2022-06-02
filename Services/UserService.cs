@@ -41,7 +41,7 @@ namespace ap_auth_server.Services
                 throw new AppException("That account doesn't exists");
             }
 
-            if(user == null || model.Password != user.Password)
+            if(user == null || !BCryptNet.Verify(model.Password, user.Password))
             {
                 throw new AppException("Invalid credentials, please try again");
             }

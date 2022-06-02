@@ -11,8 +11,21 @@ using ap_auth_server.Helpers;
 using ap_auth_server.Models;
 using ap_auth_server.Services;
 using ap_auth_server.Authorization;
+using AutoMapper;
+using ap_auth_server.Models.Users;
+using ap_auth_server.Entities.User;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var configuration = builder.Configuration;
+
+var config = new MapperConfiguration(cfg => {
+    cfg.CreateMap<RegisterRequest, User>();
+    cfg.CreateMap<User, AuthenticateResponse>();
+});
+
+IMapper mapper = config.CreateMapper();
+
 
 // Add services to the container.
 {
@@ -21,20 +34,27 @@ var builder = WebApplication.CreateBuilder(args);
     services.AddEndpointsApiExplorer();
     services.AddSwaggerGen();
 
-    //DataContext
+
+    // DataContext
     services.AddDbContext<DataContext>(option => option.UseMySQL(builder.Configuration.GetConnectionString("APDatabase")));
 
+    // Controllers and cors policies
     services.AddControllers();
     services.AddCors();
     services.AddHttpContextAccessor();
+    services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-    //Utils
+    // Utils
     services.AddScoped<IJwtUtils, JwtUtils>();
 
-    //Interfaces
+    // Interfaces
     services.AddScoped<IUserService, UserService>();
 
-    services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+    services.AddSingleton(mapper);
+
+    services.AddAutoMapper(typeof(AutoMapperProfile));
+
+    services.Configure<AppSettings>(configuration.GetSection("AppSettings"));
 }
 
 var app = builder.Build();

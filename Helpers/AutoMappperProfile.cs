@@ -9,13 +9,13 @@ namespace ap_auth_server.Helpers
         public AutoMapperProfile()
         {
             // User -> AuthenticateResponse
-            CreateMap<User, AuthenticateResponse>();
+            this.CreateMap<User, AuthenticateResponse>().ReverseMap();
 
             // RegisterRequest -> User
-            CreateMap<RegisterRequest, User>();
+            this.CreateMap<RegisterRequest, User>().ReverseMap();
 
             // UpdateRequest -> User
-            CreateMap<UpdateRequest, User>()
+            this.CreateMap<UpdateRequest, User>()
                 .ForAllMembers(x => x.Condition(
                     (src, dest, prop) =>
                     {

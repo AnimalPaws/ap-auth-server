@@ -9,8 +9,8 @@ namespace ap_auth_server.Services
 {
     public interface IFoundationService
     {
-        AuthenticateResponse Authenticate(AuthenticateRequest model);
-        void Register(RegisterRequest model);
+        FoundationAuthenticateResponse Authenticate(FoundationAuthenticateRequest model);
+        void Register(FoundationRegisterRequest model);
         /*IEnumerable<User> GetAll();*/
         Foundation GetById(int id);
         /*void Update(int id, UpdateRequest model);
@@ -32,7 +32,7 @@ namespace ap_auth_server.Services
             _mapper = mapper;
         }
 
-        public AuthenticateResponse Authenticate(AuthenticateRequest model)
+        public FoundationAuthenticateResponse Authenticate(FoundationAuthenticateRequest model)
         {
             var foundation = _context.Foundation.SingleOrDefault(x => x.Email == model.Username);
 
@@ -41,17 +41,17 @@ namespace ap_auth_server.Services
                 throw new AppException("That account doesn't exists");
             }
 
-            if(foundation == null || !BCryptNet.Verify(model.Password, foundation.PasswordHash))
+            if(foundation == null || !BCryptNet.Verify(model.Password, foundation.Password))
             {
                 throw new AppException("Invalid credentials, please try again");
             }
 
-            var response = _mapper.Map<AuthenticateResponse>(foundation);
+            var response = _mapper.Map<FoundationAuthenticateResponse>(foundation);
             response.Token = _jwtUtils.GenerateToken(foundation);
             return response;
         }
         
-        public void Register(RegisterRequest model)
+        public void Register(FoundationRegisterRequest model)
         {
             if(_context.Foundation.Any(x => x.Email == model.Email))
             {
@@ -64,8 +64,8 @@ namespace ap_auth_server.Services
             }
 
             var foundation = _mapper.Map<Foundation>(model);
-            foundation.PasswordHash = BCryptNet.HashPassword(model.Password);
-            foundation.CreatedAt = DateTime.UtcNow;
+            foundation.Password = BCryptNet.HashPassword(model.Password);
+            foundation.Created_At = DateTime.UtcNow;
             _context.Foundation.Add(foundation);
             _context.SaveChanges();
         }

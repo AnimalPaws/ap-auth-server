@@ -2,7 +2,7 @@
 
 namespace ap_auth_server.Models.Veterinary
 {
-    public class AuthenticateResponse
+    public class VeterinaryAuthenticateResponse
     {
         public int Id { get; set; }
         public string? FirstName { get; set; }

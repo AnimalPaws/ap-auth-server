@@ -44,31 +44,55 @@ namespace ap_auth_server.Controllers
             _appSettings = appSettings.Value;
         }
 
+        // === AUTHENTIFICATION ===
 
         [AllowAnonymous]
-        //POST LOGIN
-        [HttpPost("authenticate")]
-        public IActionResult Authenticate(Models.Users.AuthenticateRequest model)
+        //POST USER LOGIN
+        [HttpPost("authenticate/user")]
+        public IActionResult UserAuthenticate(UserAuthenticateRequest model)
         {
             var response = _userService.Authenticate(model);
             return Ok(response);
         }
 
         [AllowAnonymous]
-        //POST USER REGISTER
-        [HttpPost("user")]
-        public IActionResult UserRegister(Models.Users.RegisterRequest model)
+        //POST FOUNDATION LOGIN
+        [HttpPost("authenticate/foundation")]
+        public IActionResult FoundationAuthenticate(FoundationAuthenticateRequest model)
         {
-            _userService.Register(model);
-            return Ok(new { message = "Registration successful {0}", 
-                model.Username, 
-                Status = 200 });
+            var response = _foundationService.Authenticate(model);
+            return Ok(response);
         }
 
-        /*[AllowAnonymous]
+        [AllowAnonymous]
+        //POST VETERINARY LOGIN
+        [HttpPost("authenticate/veterinary")]
+        public IActionResult VeterinaryAuthenticate(VeterinaryAuthenticateRequest model)
+        {
+            var response = _veterinaryService.Authenticate(model);
+            return Ok(response);
+        }
+
+        // === REGISTRATION ===
+
+        [AllowAnonymous]
+        //POST USER REGISTER
+        [HttpPost("register/user")]
+        public IActionResult UserRegister(UserRegisterRequest model)
+        {
+            _userService.Register(model);
+            return Ok(new 
+            { 
+                message = "Registration successful {0}", 
+                model.Username, 
+                Status = 200 
+            });
+        }
+
+        [AllowAnonymous]
         //POST FOUNDATION REGISTER
-        [HttpPost("foundation")]
-        public IActionResult FoundationRegister(Models.Foundation.RegisterRequest model)
+        [HttpPost("register/foundation")]
+        public IActionResult FoundationRegister(FoundationRegisterRequest model)
         {
             _foundationService.Register(model);
             return Ok(new
@@ -77,12 +101,12 @@ namespace ap_auth_server.Controllers
                 model.Name,
                 Status = 200
             });
-        }*/
+        }
 
-        /*[AllowAnonymous]
+        [AllowAnonymous]
         //POST VETERINARY REGISTER
-        [HttpPost("veterinary")]
-        public IActionResult VeterinaryRegister(Models.Veterinary.RegisterRequest model)
+        [HttpPost("register/veterinary")]
+        public IActionResult VeterinaryRegister(VeterinaryRegisterRequest model)
         {
             _veterinaryService.Register(model);
             return Ok(new
@@ -91,7 +115,7 @@ namespace ap_auth_server.Controllers
                 model.Name,
                 Status = 200
             });
-        }*/
+        }
 
 
         [HttpPut("recovery")]

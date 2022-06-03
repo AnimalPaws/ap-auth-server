@@ -9,8 +9,8 @@ namespace ap_auth_server.Services
 {
     public interface IUserService
     {
-        AuthenticateResponse Authenticate(AuthenticateRequest model);
-        void Register(RegisterRequest model);
+        UserAuthenticateResponse Authenticate(UserAuthenticateRequest model);
+        void Register(UserRegisterRequest model);
         /*IEnumerable<User> GetAll();*/
         User GetById(int id);
         /*void Update(int id, UpdateRequest model);
@@ -32,7 +32,7 @@ namespace ap_auth_server.Services
             _mapper = mapper;
         }
 
-        public AuthenticateResponse Authenticate(AuthenticateRequest model)
+        public UserAuthenticateResponse Authenticate(UserAuthenticateRequest model)
         {
             var user = _context.User.SingleOrDefault(x => x.Email == model.Username);
             try
@@ -43,22 +43,18 @@ namespace ap_auth_server.Services
             {
                 throw new AppException("That account doesn't exists");
             }
-            /*if(model.Username != user.Email)
-            {
-                throw new AppException("That account doesn't exists");
-            }*/
 
             if(user == null || !BCryptNet.Verify(model.Password, user.Password))
             {
                 throw new AppException("Invalid credentials, please try again");
             }
 
-            var response = _mapper.Map<AuthenticateResponse>(user);
+            var response = _mapper.Map<UserAuthenticateResponse>(user);
             response.Token = _jwtUtils.GenerateToken(user);
             return response;
         }
         
-        public void Register(RegisterRequest model)
+        public void Register(UserRegisterRequest model)
         {
             if(_context.User.Any(x => x.Email == model.Email))
             {

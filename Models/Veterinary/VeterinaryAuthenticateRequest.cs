@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ap_auth_server.Models.Users
+namespace ap_auth_server.Models.Veterinary
 {
-    public class AuthenticateRequest
+    public class VeterinaryAuthenticateRequest
     {
         [Required]
         public string Username { get; set; }

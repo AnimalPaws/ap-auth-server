@@ -7,20 +7,19 @@ namespace ap_auth_server.Entities.Foundation
         public int Id { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
-        public string PhoneNumber { get; set; }
-        public string Deparment { get; set; }
+        [JsonIgnore]
+        public string Password { get; set; }
+        public string Phone_Number { get; set; }
+        public string Department { get; set; }
         public string City { get; set; }
         public string Address { get; set; }
-        public bool PhoneNumberVerified { get; set; }
-        public bool EmailVerified { get; set; }
-        public bool IsBlocked { get; set; }
-        public bool IsRestricted { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
-        public int? ProfileId { get; set; }
+        //public bool Email_Verified { get; set; }
+        //public bool Is_Blocked { get; set; }
+        //public bool Is_Restricted { get; set; }
+        public DateTime Created_At { get; set; }
+        //public DateTime Updated_At { get; set; }
+        //public int? Profile_Id { get; set; }
         //public virtual FoundationProfile Profile { get; set; }
 
-        [JsonIgnore]
-        public string PasswordHash { get; set; }
     }
 }

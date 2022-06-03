@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ap_auth_server.Models.Veterinary
+namespace ap_auth_server.Models.Foundation
 {
-    public class AuthenticateRequest
+    public class FoundationAuthenticateRequest
     {
         [Required]
         public string Username { get; set; }

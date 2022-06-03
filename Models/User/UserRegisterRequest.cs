@@ -2,7 +2,7 @@
 
 namespace ap_auth_server.Models.Users
 {
-    public class RegisterRequest
+    public class UserRegisterRequest
     {
         [Required]
         public string? First_Name { get; set; }

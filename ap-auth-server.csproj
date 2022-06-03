@@ -30,9 +30,4 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.17.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Models\Foundation\" />
-    <Folder Include="Models\Veterinary\" />
-  </ItemGroup>
-
 </Project>

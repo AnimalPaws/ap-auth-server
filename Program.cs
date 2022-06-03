@@ -1,27 +1,31 @@
 using Microsoft.AspNetCore.Builder;
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using ap_auth_server.Controllers;
 using ap_auth_server.Helpers;
-using ap_auth_server.Models;
 using ap_auth_server.Services;
 using ap_auth_server.Authorization;
 using AutoMapper;
 using ap_auth_server.Models.Users;
+using ap_auth_server.Models.Foundation;
+using ap_auth_server.Models.Veterinary;
 using ap_auth_server.Entities.User;
+using ap_auth_server.Entities.Foundation;
+using ap_auth_server.Entities.Veterinary;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var configuration = builder.Configuration;
 
 var config = new MapperConfiguration(cfg => {
-    cfg.CreateMap<RegisterRequest, User>();
-    cfg.CreateMap<User, AuthenticateResponse>();
+    cfg.CreateMap<UserRegisterRequest, User>();
+    cfg.CreateMap<User, UserAuthenticateResponse>();
+    cfg.CreateMap<FoundationRegisterRequest, Foundation>();
+    cfg.CreateMap<Foundation, UserAuthenticateResponse>();
+    cfg.CreateMap<VeterinaryRegisterRequest, Veterinary>();
+    cfg.CreateMap<Veterinary, VeterinaryAuthenticateResponse>();
 });
 
 IMapper mapper = config.CreateMapper();
@@ -49,11 +53,14 @@ IMapper mapper = config.CreateMapper();
 
     // Interfaces
     services.AddScoped<IUserService, UserService>();
+    services.AddScoped<IFoundationService, FoundationService>();
+    services.AddScoped<IVeterinaryService, VeterinaryService>();
 
+    // AutoMapper
     services.AddSingleton(mapper);
-
     services.AddAutoMapper(typeof(AutoMapperProfile));
 
+    // AppSettings configuration
     services.Configure<AppSettings>(configuration.GetSection("AppSettings"));
 }
 

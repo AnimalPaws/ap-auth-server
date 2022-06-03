@@ -9,8 +9,8 @@ namespace ap_auth_server.Services
 {
     public interface IVeterinaryService
     {
-        AuthenticateResponse Authenticate(AuthenticateRequest model);
-        void Register(RegisterRequest model);
+        VeterinaryAuthenticateResponse Authenticate(VeterinaryAuthenticateRequest model);
+        void Register(VeterinaryRegisterRequest model);
         /*IEnumerable<User> GetAll();*/
         Veterinary GetById(int id);
         /*void Update(int id, UpdateRequest model);
@@ -32,7 +32,7 @@ namespace ap_auth_server.Services
             _mapper = mapper;
         }
 
-        public AuthenticateResponse Authenticate(AuthenticateRequest model)
+        public VeterinaryAuthenticateResponse Authenticate(VeterinaryAuthenticateRequest model)
         {
             var veterinary = _context.Veterinary.SingleOrDefault(x => x.Email == model.Username);
 
@@ -41,17 +41,17 @@ namespace ap_auth_server.Services
                 throw new AppException("That account doesn't exists");
             }
 
-            if (veterinary == null || !BCryptNet.Verify(model.Password, veterinary.PasswordHash))
+            if (veterinary == null || !BCryptNet.Verify(model.Password, veterinary.Password))
             {
                 throw new AppException("Invalid credentials, please try again");
             }
 
-            var response = _mapper.Map<AuthenticateResponse>(veterinary);
+            var response = _mapper.Map<VeterinaryAuthenticateResponse>(veterinary);
             response.Token = _jwtUtils.GenerateToken(veterinary);
             return response;
         }
 
-        public void Register(RegisterRequest model)
+        public void Register(VeterinaryRegisterRequest model)
         {
             if (_context.Veterinary.Any(x => x.Email == model.Email))
             {
@@ -64,8 +64,8 @@ namespace ap_auth_server.Services
             }
 
             var veterinary = _mapper.Map<Veterinary>(model);
-            veterinary.PasswordHash = BCryptNet.HashPassword(model.Password);
-            veterinary.CreatedAt = DateTime.UtcNow;
+            veterinary.Password = BCryptNet.HashPassword(model.Password);
+            veterinary.Created_At = DateTime.UtcNow;
             _context.Veterinary.Add(veterinary);
             _context.SaveChanges();
         }

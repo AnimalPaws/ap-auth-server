@@ -2,7 +2,7 @@
 
 namespace ap_auth_server.Models.Users
 {
-    public class AuthenticateResponse
+    public class UserAuthenticateResponse
     {
         public int? Id { get; set; }
         public string? First_Name { get; set; }

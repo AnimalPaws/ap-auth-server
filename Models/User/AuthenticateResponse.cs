@@ -25,6 +25,6 @@ namespace ap_auth_server.Models.Users
         //public int? Profile_Id { get; set; }
 
         //public virtual UserProfile Profile { get; set; }
-        public string Token { get; set; }
+        public string? Token { get; set; }
     }
 }

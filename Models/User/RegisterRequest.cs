@@ -26,6 +26,5 @@ namespace ap_auth_server.Models.Users
         public string? Department { get; set; }
         [Required]
         public string? City { get; set; }
-        public DateTime? Created_At { get; set; }
     }
 }

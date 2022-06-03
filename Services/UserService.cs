@@ -35,11 +35,18 @@ namespace ap_auth_server.Services
         public AuthenticateResponse Authenticate(AuthenticateRequest model)
         {
             var user = _context.User.SingleOrDefault(x => x.Email == model.Username);
-
-            if(model.Username != user.Email)
+            try
+            {
+                if(model.Username != user.Email);
+            }
+            catch (Exception ex)
             {
                 throw new AppException("That account doesn't exists");
             }
+            /*if(model.Username != user.Email)
+            {
+                throw new AppException("That account doesn't exists");
+            }*/
 
             if(user == null || !BCryptNet.Verify(model.Password, user.Password))
             {

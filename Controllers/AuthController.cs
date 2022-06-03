@@ -6,93 +6,122 @@ using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Cryptography;
+using Microsoft.Extensions.Options;
+using ap_auth_server.Helpers;
+using ap_auth_server.Authorization;
+using Microsoft.AspNetCore.Authorization;
+using ap_auth_server.Models.Users;
+using ap_auth_server.Models.Foundation;
+using ap_auth_server.Models.Veterinary;
+using AutoMapper;
 
 namespace ap_auth_server.Controllers
 {
+    [Microsoft.AspNetCore.Authorization.Authorize]
     [ApiController]
     [Route("auth")]
 
     public class AuthController : ControllerBase
     {
+        private IUserService _userService;
+        private IFoundationService _foundationService;
+        private IVeterinaryService _veterinaryService;
+        private IMapper _mapper;
+        private readonly AppSettings _appSettings;
 
-        private readonly UserManager<User> _userManager;
-        private readonly SignInManager<User> _signInManager;
-        private readonly IConfiguration _configuration;
-
-
-        [HttpPost("login")]
-        public IActionResult Login(string email, string password)
+        public AuthController(
+            IUserService userService,
+            IFoundationService foundationService,
+            IVeterinaryService veterinaryService,
+            IMapper mapper,
+            IOptions<AppSettings> appSettings)
         {
-            ap_dbContext dc = new ap_dbContext();
-            User user = new User();
-
-            if (dc == null) return BadRequest();
-
-            if (user.Email != email)
-            {
-                return BadRequest("Account doesn't exists");
-            }
-
-            if (user.Password != password)
-            {
-                return BadRequest("CONTRASEÑA MALA");
-            }
-
-            var token = JwtService.Encode(new Dictionary<string, object>
-            {
-                { "sub", user.Email },
-                { "iat", DateTimeOffset.UtcNow },
-                { "exp", DateTimeOffset.UtcNow.AddHours(1).ToUnixTimeSeconds() }
-            });
-
-            return Ok(token);
+            _userService = userService;
+            _foundationService = foundationService;
+            _veterinaryService = veterinaryService;
+            _mapper = mapper;
+            _appSettings = appSettings.Value;
         }
 
+        // === AUTHENTIFICATION ===
 
-        [HttpPost("signup")]
-        public IActionResult SignUp(User user)
+        [AllowAnonymous]
+        //POST USER LOGIN
+        [HttpPost("authenticate/user")]
+        public IActionResult UserAuthenticate(UserAuthenticateRequest model)
         {
-            ap_dbContext dc = new ap_dbContext();
-            if(dc == null)
-            {
-                return BadRequest();
-            }
-
-            var token = JwtService.Encode(new Dictionary<string, object>
-            {
-                { "sub", user.Email },
-                { "iat", DateTimeOffset.UtcNow },
-                { "exp", DateTimeOffset.UtcNow.AddHours(1).ToUnixTimeSeconds() }
-            });
-            return Accepted(token);
+            var response = _userService.Authenticate(model);
+            return Ok(response);
         }
 
-        private IActionResult BuildToken(User user)
+        [AllowAnonymous]
+        //POST FOUNDATION LOGIN
+        [HttpPost("authenticate/foundation")]
+        public IActionResult FoundationAuthenticate(FoundationAuthenticateRequest model)
         {
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.UniqueName, user.Email),
-                new Claim("key", "jwtkey"),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
+            var response = _foundationService.Authenticate(model);
+            return Ok(response);
+        }
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Llave_super_secreta"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        [AllowAnonymous]
+        //POST VETERINARY LOGIN
+        [HttpPost("authenticate/veterinary")]
+        public IActionResult VeterinaryAuthenticate(VeterinaryAuthenticateRequest model)
+        {
+            var response = _veterinaryService.Authenticate(model);
+            return Ok(response);
+        }
 
-            var expiration = DateTime.UtcNow.AddHours(1);
+        // === REGISTRATION ===
 
-            JwtSecurityToken token = new JwtSecurityToken(
-               issuer: "localhost",
-               audience: "localhost",
-               claims: claims,
-               expires: expiration,
-               signingCredentials: creds);
+        [AllowAnonymous]
+        //POST USER REGISTER
+        [HttpPost("register/user")]
+        public IActionResult UserRegister(UserRegisterRequest model)
+        {
+            _userService.Register(model);
+            return Ok(new 
+            { 
+                message = "Registration successful {0}", 
+                model.Username, 
+                Status = 200 
+            });
+        }
 
+        [AllowAnonymous]
+        //POST FOUNDATION REGISTER
+        [HttpPost("register/foundation")]
+        public IActionResult FoundationRegister(FoundationRegisterRequest model)
+        {
+            _foundationService.Register(model);
             return Ok(new
             {
-                token = new JwtSecurityTokenHandler().WriteToken(token),
-                expiration = expiration
+                message = "Registration successful {0}",
+                model.Name,
+                Status = 200
             });
+        }
+
+        [AllowAnonymous]
+        //POST VETERINARY REGISTER
+        [HttpPost("register/veterinary")]
+        public IActionResult VeterinaryRegister(VeterinaryRegisterRequest model)
+        {
+            _veterinaryService.Register(model);
+            return Ok(new
+            {
+                message = "Registration successful {0}",
+                model.Name,
+                Status = 200
+            });
+        }
+
+
+        [HttpPut("recovery")]
+        public async Task<ActionResult> RecoveryPassword(string email)
+        {
+            return null;
         }
     }
 }

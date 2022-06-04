@@ -119,7 +119,7 @@ namespace ap_auth_server.Controllers
 
 
         [HttpPut("recovery")]
-        public async Task<ActionResult> RecoveryPassword(string email)
+        public IActionResult RecoveryPassword(string email)
         {
             return null;
         }

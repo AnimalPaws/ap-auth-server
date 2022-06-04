@@ -16,7 +16,6 @@ namespace ap_auth_server.Models.Users
         public DateTime Birthdate { get; set; }
         public string? Department { get; set; }
         public string? City { get; set; }
-        public bool? Phone_Number_Verified { get; set; }
         public bool? Email_Verified { get; set; }
         public bool? Is_Blocked { get; set; }
         public bool? Is_Restricted { get; set; }
@@ -26,5 +25,23 @@ namespace ap_auth_server.Models.Users
 
         //public virtual UserProfile Profile { get; set; }
         public string? Token { get; set; }
+
+        /* public UserAuthenticateResponse(User user, string token)
+        {
+            Id = user.Id;
+            First_Name = user.First_Name;
+            Middle_Name = user.Middle_Name;
+            Surname = user.Surname;
+            Last_Name = user.Last_Name;
+            Username = user.Username;
+            Sex = user.Sex;
+            Email = user.Email;
+            Phone_Number = user.Phone_Number;
+            Birthdate = user.Birthdate;
+            Department = user.Department;
+            City = user.City;
+            Created_At = user.Created_At;
+            Token = token;
+        }*/
     }
 }

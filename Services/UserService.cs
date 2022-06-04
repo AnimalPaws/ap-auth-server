@@ -39,7 +39,7 @@ namespace ap_auth_server.Services
             {
                 if(model.Username != user.Email);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw new AppException("That account doesn't exists");
             }

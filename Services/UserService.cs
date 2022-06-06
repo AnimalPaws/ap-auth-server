@@ -32,7 +32,7 @@ namespace ap_auth_server.Services
             _mapper = mapper;
         }
 
-        public UserAuthenticateResponse Authenticate(UserAuthenticateRequest model)
+        public UserAuthenticateResponse Authenticate(UserAuthenticateRequest model, string ipAddress)
         {
             var user = _context.User.SingleOrDefault(x => x.Email == model.Username);
             try

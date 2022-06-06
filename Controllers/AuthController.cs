@@ -18,7 +18,7 @@ namespace ap_auth_server.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("auth")]
+    [Route("api/auth")]
 
     public class AuthController : BaseController
     {

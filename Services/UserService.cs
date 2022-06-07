@@ -4,12 +4,13 @@ using ap_auth_server.Helpers;
 using ap_auth_server.Authorization;
 using ap_auth_server.Models.Users;
 using ap_auth_server.Entities.User;
+using ap_auth_server.Models;
 
 namespace ap_auth_server.Services
 {
     public interface IUserService
     {
-        UserAuthenticateResponse Authenticate(UserAuthenticateRequest model);
+        UserAuthenticateResponse Authenticate(AuthenticateRequest model, string ipAddress);
         void Register(UserRegisterRequest model);
         /*IEnumerable<User> GetAll();*/
         User GetById(int id);
@@ -32,7 +33,7 @@ namespace ap_auth_server.Services
             _mapper = mapper;
         }
 
-        public UserAuthenticateResponse Authenticate(UserAuthenticateRequest model, string ipAddress)
+        public UserAuthenticateResponse Authenticate(AuthenticateRequest model, string ipAddress)
         {
             var user = _context.User.SingleOrDefault(x => x.Email == model.Username);
             try
@@ -56,7 +57,9 @@ namespace ap_auth_server.Services
         
         public void Register(UserRegisterRequest model)
         {
-            if(_context.User.Any(x => x.Email == model.Email))
+            if(_context.User.Any(x => x.Email == model.Email) || 
+                _context.Foundation.Any(x => x.Email == model.Email) || 
+                _context.Veterinary.Any(x => x.Email == model.Email))
             {
                 throw new AppException("An account with that email address already exists.");
             }

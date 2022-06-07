@@ -4,12 +4,13 @@ using ap_auth_server.Helpers;
 using ap_auth_server.Authorization;
 using ap_auth_server.Models.Foundation;
 using ap_auth_server.Entities.Foundation;
+using ap_auth_server.Models;
 
 namespace ap_auth_server.Services
 {
     public interface IFoundationService
     {
-        FoundationAuthenticateResponse Authenticate(FoundationAuthenticateRequest model);
+        FoundationAuthenticateResponse Authenticate(AuthenticateRequest model, string ipAddress);
         void Register(FoundationRegisterRequest model);
         /*IEnumerable<User> GetAll();*/
         Foundation GetById(int id);
@@ -32,7 +33,7 @@ namespace ap_auth_server.Services
             _mapper = mapper;
         }
 
-        public FoundationAuthenticateResponse Authenticate(FoundationAuthenticateRequest model)
+        public FoundationAuthenticateResponse Authenticate(AuthenticateRequest model, string ipAddress)
         {
             var foundation = _context.Foundation.SingleOrDefault(x => x.Email == model.Username);
 
@@ -53,7 +54,9 @@ namespace ap_auth_server.Services
         
         public void Register(FoundationRegisterRequest model)
         {
-            if(_context.Foundation.Any(x => x.Email == model.Email))
+            if (_context.User.Any(x => x.Email == model.Email) ||
+                _context.Foundation.Any(x => x.Email == model.Email) ||
+                _context.Veterinary.Any(x => x.Email == model.Email))
             {
                 throw new AppException("An account with that email address already exists.");
             }

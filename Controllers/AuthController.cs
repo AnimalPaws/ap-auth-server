@@ -8,6 +8,7 @@ using ap_auth_server.Models.Veterinary;
 using AutoMapper;
 using ap_auth_server.Authorization;
 using ap_auth_server.Autherization;
+using ap_auth_server.Models;
 
 namespace ap_auth_server.Controllers
 {
@@ -21,6 +22,7 @@ namespace ap_auth_server.Controllers
         private IFoundationService _foundationService;
         private IVeterinaryService _veterinaryService;
         private IMapper _mapper;
+        private DataContext _dataContext;
         private readonly AppSettings _appSettings;
 
         // CONSTRUCTOR THAT CONTAINS METHODS
@@ -29,12 +31,14 @@ namespace ap_auth_server.Controllers
             IFoundationService foundationService,
             IVeterinaryService veterinaryService,
             IMapper mapper,
+            DataContext dataContext,
             IOptions<AppSettings> appSettings)
         {
             _userService = userService;
             _foundationService = foundationService;
             _veterinaryService = veterinaryService;
             _mapper = mapper;
+            _dataContext = dataContext;
             _appSettings = appSettings.Value;
         }
 
@@ -43,27 +47,12 @@ namespace ap_auth_server.Controllers
         [AllowAnonymous]
         //POST USER LOGIN
         [HttpPost("authenticate/user")]
-        public IActionResult UserAuthenticate(UserAuthenticateRequest model)
+        public IActionResult UserAuthenticate(AuthenticateRequest model)
         {
-            var response = _userService.Authenticate(model, ipAddress());
-            return Ok(response);
-        }
+            var response = (_dataContext.User.Any(x => x.Email == model.Username) ||
+                _dataContext.Foundation.Any(x => x.Email == model.Username) ||
+                _dataContext.Veterinary.Any(x => x.Email == model.Username));
 
-        [AllowAnonymous]
-        //POST FOUNDATION LOGIN
-        [HttpPost("authenticate/foundation")]
-        public IActionResult FoundationAuthenticate(FoundationAuthenticateRequest model)
-        {
-            var response = _foundationService.Authenticate(model);
-            return Ok(response);
-        }
-
-        [AllowAnonymous]
-        //POST VETERINARY LOGIN
-        [HttpPost("authenticate/veterinary")]
-        public IActionResult VeterinaryAuthenticate(VeterinaryAuthenticateRequest model)
-        {
-            var response = _veterinaryService.Authenticate(model);
             return Ok(response);
         }
 
@@ -107,7 +96,7 @@ namespace ap_auth_server.Controllers
                 Status = 200
             });
         }
-
+        /*
         // VERIFICATION OF EMAIL
         [AllowAnonymous]
         [HttpPost("verify-email")]
@@ -150,7 +139,7 @@ namespace ap_auth_server.Controllers
                 Expires = DateTime.UtcNow.AddDays(7)
             };
             Response.Cookies.Append("refreshToken", token, cookieOptions);
-        }
+        }*/
 
         private string ipAddress()
         {

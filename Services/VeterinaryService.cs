@@ -4,12 +4,13 @@ using ap_auth_server.Helpers;
 using ap_auth_server.Authorization;
 using ap_auth_server.Models.Veterinary;
 using ap_auth_server.Entities.Veterinary;
+using ap_auth_server.Models;
 
 namespace ap_auth_server.Services
 {
     public interface IVeterinaryService
     {
-        VeterinaryAuthenticateResponse Authenticate(VeterinaryAuthenticateRequest model);
+        VeterinaryAuthenticateResponse Authenticate(AuthenticateRequest model, string ipAddress);
         void Register(VeterinaryRegisterRequest model);
         /*IEnumerable<User> GetAll();*/
         Veterinary GetById(int id);
@@ -32,7 +33,7 @@ namespace ap_auth_server.Services
             _mapper = mapper;
         }
 
-        public VeterinaryAuthenticateResponse Authenticate(VeterinaryAuthenticateRequest model)
+        public VeterinaryAuthenticateResponse Authenticate(AuthenticateRequest model, string ipAddress)
         {
             var veterinary = _context.Veterinary.SingleOrDefault(x => x.Email == model.Username);
 
@@ -53,7 +54,9 @@ namespace ap_auth_server.Services
 
         public void Register(VeterinaryRegisterRequest model)
         {
-            if (_context.Veterinary.Any(x => x.Email == model.Email))
+            if (_context.User.Any(x => x.Email == model.Email) ||
+                _context.Foundation.Any(x => x.Email == model.Email) ||
+                _context.Veterinary.Any(x => x.Email == model.Email))
             {
                 throw new AppException("An account with that email address already exists.");
             }

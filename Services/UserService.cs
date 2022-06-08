@@ -38,54 +38,79 @@ namespace ap_auth_server.Services
             var user = _context.User.SingleOrDefault(x => x.Email == model.Username);
             try
             {
-                if(model.Username != user.Email);
-            }
-            catch (Exception)
-            {
-                throw new AppException("That account doesn't exists");
-            }
+                if(model.Username != user.Email)
+                {
+                    throw new AppException("That account doesn't exists");
+                }
 
-            if(user == null || !BCryptNet.Verify(model.Password, user.Password))
-            {
-                throw new AppException("Invalid credentials, please try again");
-            }
+                if (user == null || !BCryptNet.Verify(model.Password, user.Password))
+                {
+                    throw new AppException("Invalid credentials, please try again");
+                }
 
-            var response = _mapper.Map<UserAuthenticateResponse>(user);
-            response.Token = _jwtUtils.GenerateToken(user);
-            return response;
+                var response = _mapper.Map<UserAuthenticateResponse>(user);
+                response.Token = _jwtUtils.GenerateToken(user);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                throw new AppException("Something was wrong: {0}", ex);
+            }
         }
         
         public void Register(UserRegisterRequest model)
         {
-            if(_context.User.Any(x => x.Email == model.Email) || 
-                _context.Foundation.Any(x => x.Email == model.Email) || 
+            try
+            {
+                if (_context.User.Any(x => x.Email == model.Email) ||
+                _context.Foundation.Any(x => x.Email == model.Email) ||
                 _context.Veterinary.Any(x => x.Email == model.Email))
-            {
-                throw new AppException("An account with that email address already exists.");
-            }
+                {
+                    throw new AppException("An account with that email address already exists.");
+                }
 
-            if(_context.User.Any(x => x.Username == model.Username))
-            {
-                throw new AppException("Username {0} is already taken", model.Username);
-            }
+                if (_context.User.Any(x => x.Username == model.Username))
+                {
+                    throw new AppException("Username {0} is already taken", model.Username);
+                }
 
-            var user = _mapper.Map<User>(model);
-            user.Password = BCryptNet.HashPassword(model.Password);
-            user.Created_At = DateTime.UtcNow;
-            _context.User.Add(user);
-            _context.SaveChanges();
+                var user =  _mapper.Map<User>(model);
+                user.Password = BCryptNet.HashPassword(model.Password);
+                user.Created_At = DateTime.UtcNow;
+                _context.Update(user);
+                _context.User.Add(user);
+                _context.SaveChanges();
+            }
+            catch(Exception ex)
+            {
+                throw new AppException("Something was wrong: {0}", ex);
+            }
         }
 
         public User GetById(int id)
         {
-            return getUser(id);
+            try
+            {
+                return getUser(id);
+            }
+            catch(Exception ex) 
+            {
+                throw new AppException("Something was wrong: {0}", ex);
+            }
         }
 
         private User getUser(int id)
         {
-            var user = _context.User.Find(id);
-            if (user == null) throw new KeyNotFoundException("User not found");
-            return user;
+            try
+            {
+                var user = _context.User.Find(id);
+                if (user == null) throw new KeyNotFoundException("User not found");
+                return user;
+            }
+            catch (Exception ex)
+            {
+                throw new AppException("Something was wrong: {0}", ex);
+            }
         }
     }
 }

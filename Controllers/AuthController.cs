@@ -22,23 +22,23 @@ namespace ap_auth_server.Controllers
         private IFoundationService _foundationService;
         private IVeterinaryService _veterinaryService;
         private IMapper _mapper;
-        private DataContext _dataContext;
+        private DataContext _context;
         private readonly AppSettings _appSettings;
 
-        // CONSTRUCTOR THAT CONTAINS METHODS
+        // CONSTRUCTOR THAT CONTAINS CLASS INSTANCES
         public AuthController(
             IUserService userService,
             IFoundationService foundationService,
             IVeterinaryService veterinaryService,
             IMapper mapper,
-            DataContext dataContext,
+            DataContext context,
             IOptions<AppSettings> appSettings)
         {
             _userService = userService;
             _foundationService = foundationService;
             _veterinaryService = veterinaryService;
             _mapper = mapper;
-            _dataContext = dataContext;
+            _context = context;
             _appSettings = appSettings.Value;
         }
 
@@ -46,14 +46,20 @@ namespace ap_auth_server.Controllers
 
         [AllowAnonymous]
         //POST USER LOGIN
-        [HttpPost("authenticate/user")]
+        [HttpPost("authenticate")]
         public IActionResult UserAuthenticate(AuthenticateRequest model)
         {
-            var response = (_dataContext.User.Any(x => x.Email == model.Username) ||
-                _dataContext.Foundation.Any(x => x.Email == model.Username) ||
-                _dataContext.Veterinary.Any(x => x.Email == model.Username));
-
-            return Ok(response);
+            try
+            {
+                var response = (_context.User.Any(x => x.Email == model.Username) ||
+                _context.Foundation.Any(x => x.Email == model.Username) ||
+                _context.Veterinary.Any(x => x.Email == model.Username));
+                return Ok(response);
+            }
+            catch (BadHttpRequestException ex)
+            {
+                throw new AppException("Something was wrong: {0}", ex);
+            }
         }
 
         // === REGISTRATION ===
@@ -63,12 +69,19 @@ namespace ap_auth_server.Controllers
         [HttpPost("register/user")]
         public IActionResult UserRegister(UserRegisterRequest model)
         {
-            _userService.Register(model);
-            return Ok(new 
-            { 
-                message = "Registration successful. Check your email",
-                Status = 200 
-            });
+            try
+            {
+                _userService.Register(model);
+                return Ok(new
+                {
+                    message = "Registration successful. Check your email",
+                    Status = 200
+                });
+            }
+            catch (BadHttpRequestException ex)
+            {
+                throw new AppException("Something was wrong: {0}", ex);
+            }
         }
 
         [AllowAnonymous]
@@ -76,12 +89,19 @@ namespace ap_auth_server.Controllers
         [HttpPost("register/foundation")]
         public IActionResult FoundationRegister(FoundationRegisterRequest model)
         {
-            _foundationService.Register(model);
-            return Ok(new
+            try
             {
-                message = "Registration successful. Check your email",
-                Status = 200
-            });
+                _foundationService.Register(model);
+                return Ok(new
+                {
+                    message = "Registration successful. Check your email",
+                    Status = 200
+                });
+            }
+            catch (BadHttpRequestException ex)
+            {
+                throw new AppException("Something was wrong: {0}", ex);
+            }
         }
 
         [AllowAnonymous]
@@ -89,12 +109,19 @@ namespace ap_auth_server.Controllers
         [HttpPost("register/veterinary")]
         public IActionResult VeterinaryRegister(VeterinaryRegisterRequest model)
         {
-            _veterinaryService.Register(model);
-            return Ok(new
+            try
             {
-                message = "Registration successful. Check your email",
-                Status = 200
-            });
+                _veterinaryService.Register(model);
+                return Ok(new
+                {
+                    message = "Registration successful. Check your email",
+                    Status = 200
+                });
+            }
+            catch (BadHttpRequestException ex)
+            {
+                throw new AppException("Something was wrong: {0}", ex);
+            }
         }
         /*
         // VERIFICATION OF EMAIL

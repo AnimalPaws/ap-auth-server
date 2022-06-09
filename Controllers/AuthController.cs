@@ -187,7 +187,7 @@ namespace ap_auth_server.Controllers
         public ActionResult<AuthenticateResponse> RefreshToken()
         {
             var refreshToken = Request.Cookies["refreshToken"];
-            var response = _accountService.RefreshToken(refreshToken, ipAddress());
+            var response = _userService.RefreshToken(refreshToken, ipAddress());
             setTokenCookie(response.RefreshToken);
             return Ok(response);
         }

@@ -9,6 +9,7 @@ using AutoMapper;
 using ap_auth_server.Authorization;
 using ap_auth_server.Autherization;
 using ap_auth_server.Models;
+using ap_auth_server.Models.Jwt;
 
 namespace ap_auth_server.Controllers
 {
@@ -16,7 +17,7 @@ namespace ap_auth_server.Controllers
     [ApiController]
     [Route("auth")]
 
-    public class AuthController : ControllerBase
+    public class AuthController : BaseController
     {
         private IUserService _userService;
         private IFoundationService _foundationService;
@@ -54,6 +55,26 @@ namespace ap_auth_server.Controllers
                 var response = (_context.User.Any(x => x.Email == model.Username) ||
                 _context.Foundation.Any(x => x.Email == model.Username) ||
                 _context.Veterinary.Any(x => x.Email == model.Username));
+
+                // Accede al servicio y retorna los datos si el email es de USUARIO
+                if (response = _context.User.Any(x => x.Email == model.Username))
+                {
+                    var user = _userService.Authenticate(model, ipAddress());
+                    return Ok(user);
+                }
+                // Accede al servicio y retorna los datos si el email es de FUNDACIÓN
+                else if (response = _context.Foundation.Any(x => x.Email == model.Username))
+                {
+                    var foundation = _foundationService.Authenticate(model, ipAddress());
+                    return Ok(foundation);
+                }
+                // Accede al servicio y retorna los datos si el email es de VETERINARIO
+                else if (response = _context.Veterinary.Any(x => x.Email == model.Username))
+                {
+                    var veterinary = _veterinaryService.Authenticate(model, ipAddress());
+                    return Ok(veterinary);
+                }
+
                 return Ok(response);
             }
             catch (BadHttpRequestException ex)
@@ -123,7 +144,9 @@ namespace ap_auth_server.Controllers
                 throw new AppException("Something was wrong: {0}", ex);
             }
         }
-        /*
+
+        // === VERIFY AND RECOVERY ===
+
         // VERIFICATION OF EMAIL
         [AllowAnonymous]
         [HttpPost("verify-email")]
@@ -157,6 +180,43 @@ namespace ap_auth_server.Controllers
             });
         }
 
+        // === TOKENS ===
+
+        [AllowAnonymous]
+        [HttpPost("refresh-token")]
+        public ActionResult<AuthenticateResponse> RefreshToken()
+        {
+            var refreshToken = Request.Cookies["refreshToken"];
+            var response = _accountService.RefreshToken(refreshToken, ipAddress());
+            setTokenCookie(response.RefreshToken);
+            return Ok(response);
+        }
+
+        [HttpPost("revoke-token")]
+        public IActionResult RevokeToken(RevokeTokenRequest model)
+        {
+            // accept token from request body or cookie
+            var token = model.Token ?? Request.Cookies["refreshToken"];
+
+            if (string.IsNullOrEmpty(token))
+                return BadRequest(new { message = "Token is required" });
+
+            // users can revoke their own tokens and admins can revoke any tokens
+            if (!Account.OwnsToken(token) && Account.Role != Role.Admin)
+                return Unauthorized(new { message = "Unauthorized" });
+
+            _accountService.RevokeToken(token, ipAddress());
+            return Ok(new { message = "Token revoked" });
+        }
+
+        [AllowAnonymous]
+        [HttpPost("validate-reset-token")]
+        public IActionResult ValidateResetToken(ValidateResetTokenRequest model)
+        {
+            _accountService.ValidateResetToken(model);
+            return Ok(new { message = "Token is valid" });
+        }
+
         // HELPER METHODS
         private void setTokenCookie(string token)
         {
@@ -166,7 +226,7 @@ namespace ap_auth_server.Controllers
                 Expires = DateTime.UtcNow.AddDays(7)
             };
             Response.Cookies.Append("refreshToken", token, cookieOptions);
-        }*/
+        }
 
         private string ipAddress()
         {

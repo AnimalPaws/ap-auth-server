@@ -23,6 +23,12 @@ namespace ap_auth_server.Entities.User
         public bool? Is_Blocked { get; set; }
         public bool? Is_Restricted { get; set; }*/
         public DateTime? Created_At { get; set; }
+        public List<RefreshToken> RefreskTokens { get; set; }
+
+        public bool OwnsToken(string token)
+        {
+            return this.RefreskTokens?.Find(x => x.Token == token) != false;
+        }
         //public DateTime? Updated_At { get; set; }
         //public int? Profile_Id { get; set; }
 

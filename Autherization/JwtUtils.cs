@@ -11,6 +11,8 @@ using ap_auth_server.Helpers;
 using ap_auth_server.Entities.User;
 using ap_auth_server.Entities.Veterinary;
 using ap_auth_server.Entities.Foundation;
+using System.Security.Cryptography;
+using ap_auth_server.Entities;
 
 namespace ap_auth_server.Authorization
 {
@@ -20,15 +22,20 @@ namespace ap_auth_server.Authorization
         public string GenerateToken(Foundation foundation);
         public string GenerateToken(Veterinary veterinary);
         public int? ValidateToken(string token);
+        public RefreshToken GenerateRefreshToken(string ipAddress);
     }
 
     public class JwtUtils : IJwtUtils
     {
+        DataContext _context;
         private readonly AppSettings _appSettings;
 
-        public JwtUtils(IOptions<AppSettings> appSettings)
+        public JwtUtils(
+            DataContext context,
+            IOptions<AppSettings> appSettings)
         {
             _appSettings = appSettings.Value;
+            _context = context;
         }
 
         public string GenerateToken(User user)
@@ -39,7 +46,7 @@ namespace ap_auth_server.Authorization
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[] { new Claim("id", user.Id.ToString()) }),
-                Expires = DateTime.UtcNow.AddDays(7),
+                Expires = DateTime.UtcNow.AddMinutes(15),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
@@ -54,7 +61,7 @@ namespace ap_auth_server.Authorization
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[] { new Claim("id", foundation.Id.ToString()) }),
-                Expires = DateTime.UtcNow.AddDays(7),
+                Expires = DateTime.UtcNow.AddMinutes(15),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
@@ -69,7 +76,7 @@ namespace ap_auth_server.Authorization
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[] { new Claim("id", veterinary.Id.ToString()) }),
-                Expires = DateTime.UtcNow.AddDays(7),
+                Expires = DateTime.UtcNow.AddMinutes(15),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
@@ -96,16 +103,37 @@ namespace ap_auth_server.Authorization
                 }, out SecurityToken validatedToken);
 
                 var jwtToken = (JwtSecurityToken)validatedToken;
-                var userId = int.Parse(jwtToken.Claims.First(x => x.Type == "id").Value);
+                var accountId = int.Parse(jwtToken.Claims.First(x => x.Type == "id").Value);
 
                 // return user id from JWT token if validation successful
-                return userId;
+                return accountId;
             }
             catch
             {
-                // return null if validation fails
-                return null;
+                // return exception if validation fails
+                throw new AppException("Invalid token");
             }
+        }
+
+        public RefreshToken GenerateRefreshToken(string ipAddress)
+        {
+            var refreshToken = new RefreshToken
+            {
+                // token is a cryptographically strong random sequence of values
+                Token = Convert.ToHexString(RandomNumberGenerator.GetBytes(64)),
+                // token is valid for 7 days
+                Expire_At = DateTime.UtcNow.AddDays(7),
+                Created_At = DateTime.UtcNow,
+                Created_By_Ip = ipAddress
+            };
+
+            // ensure token is unique by checking against db
+            var tokenIsUnique = !_context.User.Any(a => a.RefreshTokens.Any(t => t.Token == refreshToken.Token));
+
+            if (!tokenIsUnique)
+                return GenerateRefreshToken(ipAddress);
+
+            return refreshToken;
         }
     }
 }

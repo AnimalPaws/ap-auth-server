@@ -17,6 +17,12 @@ namespace ap_auth_server.Entities.Veterinary
         //public bool Is_Blocked { get; set; }
         //public bool Is_Restricted { get; set; }
         public DateTime Created_At { get; set; }
+        public List<RefreshToken> RefreshTokens { get; set; }
+
+        public bool OwnsToken(string token)
+        {
+            return this.RefreshTokens?.Find(x => x.Token == token) != null;
+        }
         //public DateTime Updated_At { get; set; }
         //public int? Profile_Id { get; set; }
         //public virtual VeterinaryProfile Profile { get; set; }

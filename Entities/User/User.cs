@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace ap_auth_server.Entities.User
 {
@@ -14,6 +15,8 @@ namespace ap_auth_server.Entities.User
         public string? Email { get; set; }
         [JsonIgnore]
         public string? Password { get; set; }
+        [NotMapped]
+        public Role Role { get; set; }
         public string? Phone_Number { get; set; }
         public DateTime Birthdate { get; set; }
         public string? Department { get; set; }
@@ -23,12 +26,20 @@ namespace ap_auth_server.Entities.User
         public bool? Is_Blocked { get; set; }
         public bool? Is_Restricted { get; set; }*/
         public DateTime? Created_At { get; set; }
-        public List<RefreshToken> RefreskTokens { get; set; }
+        [NotMapped]
+        public DateTime? Reset_Token_Expire { get; set; }
+        public DateTime? PasswordReset { get; set; }
+        public string? VerificationToken { get; set; }
+        [NotMapped]
+        public string? ResetToken { get; set; }
+        [NotMapped]
+        public List<RefreshToken> RefreshTokens { get; set; }
 
         public bool OwnsToken(string token)
         {
-            return this.RefreskTokens?.Find(x => x.Token == token) != false;
+            return this.RefreshTokens?.Find(x => x.Token == token) != null;
         }
+       
         //public DateTime? Updated_At { get; set; }
         //public int? Profile_Id { get; set; }
 

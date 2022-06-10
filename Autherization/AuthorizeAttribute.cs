@@ -8,12 +8,20 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Linq;
+using ap_auth_server.Entities;
 
 namespace ap_auth_server.Authorization
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class AuthorizeAttribute : Attribute, IAuthorizationFilter
     {
+        private readonly IList<Role> _roles;
+
+        public AuthorizeAttribute(params Role[] roles)
+        {
+            _roles = roles ?? new Role[] { };
+        }
+
         public void OnAuthorization(AuthorizationFilterContext context)
         {
             // skip authorization if action is decorated with [AllowAnonymous] attribute

@@ -60,13 +60,14 @@ IMapper mapper = config.CreateMapper();
     services.AddScoped<IUserService, UserService>();
     services.AddScoped<IFoundationService, FoundationService>();
     services.AddScoped<IVeterinaryService, VeterinaryService>();
+    services.AddScoped<IEmailService, EmailService>();
 
     // AutoMapper
     services.AddSingleton(mapper);
     services.AddAutoMapper(typeof(AutoMapperProfile));
 
     // AppSettings configuration
-    services.Configure<AppSettings>(configuration.GetSection("AppSettings"));
+    services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 }
 
 var app = builder.Build();

@@ -10,6 +10,9 @@ using ap_auth_server.Authorization;
 using ap_auth_server.Autherization;
 using ap_auth_server.Models;
 using ap_auth_server.Models.Jwt;
+using ap_auth_server.Models.Confirmation;
+using ap_auth_server.Models.Recovery;
+using ap_auth_server.Entities;
 
 namespace ap_auth_server.Controllers
 {
@@ -59,22 +62,24 @@ namespace ap_auth_server.Controllers
                 // Accede al servicio y retorna los datos si el email es de USUARIO
                 if (response = _context.User.Any(x => x.Email == model.Username))
                 {
-                    var user = _userService.Authenticate(model, ipAddress());
+                    var user = _userService.Authenticate(model, IpAddress());
+                    SetTokenCookie(user.RefreshToken);
                     return Ok(user);
                 }
                 // Accede al servicio y retorna los datos si el email es de FUNDACIÓN
                 else if (response = _context.Foundation.Any(x => x.Email == model.Username))
                 {
-                    var foundation = _foundationService.Authenticate(model, ipAddress());
+                    var foundation = _foundationService.Authenticate(model, IpAddress());
+                    //SetTokenCookie(foundation.RefreshToken);
                     return Ok(foundation);
                 }
                 // Accede al servicio y retorna los datos si el email es de VETERINARIO
                 else if (response = _context.Veterinary.Any(x => x.Email == model.Username))
                 {
-                    var veterinary = _veterinaryService.Authenticate(model, ipAddress());
+                    var veterinary = _veterinaryService.Authenticate(model, IpAddress());
+                    //SetTokenCookie(veterinary.RefreshToken);
                     return Ok(veterinary);
                 }
-
                 return Ok(response);
             }
             catch (BadHttpRequestException ex)
@@ -92,7 +97,7 @@ namespace ap_auth_server.Controllers
         {
             try
             {
-                _userService.Register(model);
+                _userService.Register(model, Request.Headers["origin"]);
                 return Ok(new
                 {
                     message = "Registration successful. Check your email",
@@ -152,7 +157,7 @@ namespace ap_auth_server.Controllers
         [HttpPost("verify-email")]
         public IActionResult VerifyEmail(VerifyEmailRequest model)
         {
-            _accountService.VerifyEmail(model.Token);
+            _userService.VerifyEmail(model.Token);
             return Ok(new
             { 
                 message = "Verification successful, you can now login",
@@ -165,7 +170,8 @@ namespace ap_auth_server.Controllers
         [HttpPost("recovery")]
         public IActionResult RecoveryPassword(RecoveryPasswordRequest model)
         {
-            return null;
+            _userService.Recovery(model, Request.Headers["origin"]);
+            return Ok(new { message = "Please check your email for password reset instructions" });
         }
 
         [AllowAnonymous]
@@ -181,14 +187,14 @@ namespace ap_auth_server.Controllers
         }
 
         // === TOKENS ===
-
+        
         [AllowAnonymous]
         [HttpPost("refresh-token")]
-        public ActionResult<AuthenticateResponse> RefreshToken()
+        public ActionResult<UserAuthenticateResponse> RefreshToken()
         {
             var refreshToken = Request.Cookies["refreshToken"];
-            var response = _userService.RefreshToken(refreshToken, ipAddress());
-            setTokenCookie(response.RefreshToken);
+            var response = _userService.RefreshToken(refreshToken, IpAddress());
+            SetTokenCookie(response.RefreshToken);
             return Ok(response);
         }
 
@@ -202,10 +208,10 @@ namespace ap_auth_server.Controllers
                 return BadRequest(new { message = "Token is required" });
 
             // users can revoke their own tokens and admins can revoke any tokens
-            if (!Account.OwnsToken(token) && Account.Role != Role.Admin)
+            if (!User.OwnsToken(token) && User.Role != Role.Admin)
                 return Unauthorized(new { message = "Unauthorized" });
 
-            _accountService.RevokeToken(token, ipAddress());
+            _userService.RevokeToken(token, IpAddress());
             return Ok(new { message = "Token revoked" });
         }
 
@@ -213,12 +219,12 @@ namespace ap_auth_server.Controllers
         [HttpPost("validate-reset-token")]
         public IActionResult ValidateResetToken(ValidateResetTokenRequest model)
         {
-            _accountService.ValidateResetToken(model);
+            _userService.ValidateResetToken(model);
             return Ok(new { message = "Token is valid" });
         }
 
         // HELPER METHODS
-        private void setTokenCookie(string token)
+        private void SetTokenCookie(string token)
         {
             var cookieOptions = new CookieOptions
             {
@@ -228,7 +234,7 @@ namespace ap_auth_server.Controllers
             Response.Cookies.Append("refreshToken", token, cookieOptions);
         }
 
-        private string ipAddress()
+        private string IpAddress()
         {
             if (Request.Headers.ContainsKey("X-Forwarded-For"))
                 return Request.Headers["X-Forwarded-For"];

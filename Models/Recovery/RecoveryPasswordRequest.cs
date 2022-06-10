@@ -2,7 +2,7 @@
 
 namespace ap_auth_server.Models.Recovery
 {
-    public class ForgotPasswordRequest
+    public class RecoveryPasswordRequest
     {
         [Required]
         [EmailAddress]

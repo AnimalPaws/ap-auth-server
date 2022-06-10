@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ap_auth_server.Entities
 {
+    [Owned]
     public class RefreshToken
     {
         [Key]

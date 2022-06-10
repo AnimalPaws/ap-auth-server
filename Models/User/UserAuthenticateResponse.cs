@@ -1,4 +1,5 @@
 ﻿using ap_auth_server.Entities.User;
+using System.Text.Json.Serialization;
 
 namespace ap_auth_server.Models.Users
 {
@@ -12,6 +13,7 @@ namespace ap_auth_server.Models.Users
         public string? Username { get; set; }
         public string? Sex { get; set; }
         public string? Email { get; set; }
+        public string? Role { get; set; }
         public string? Phone_Number { get; set; }
         public DateTime Birthdate { get; set; }
         public string? Department { get; set; }
@@ -25,6 +27,9 @@ namespace ap_auth_server.Models.Users
 
         //public virtual UserProfile Profile { get; set; }
         public string? Token { get; set; }
+
+        [JsonIgnore] // refresh token is returned in http only cookie
+        public string RefreshToken { get; set; }
 
         /* public UserAuthenticateResponse(User user, string token)
         {

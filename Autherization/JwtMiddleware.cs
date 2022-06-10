@@ -3,16 +3,19 @@ using Microsoft.Extensions.Options;
 using System.Linq;
 using System.Threading.Tasks;
 using ap_auth_server.Services;
+using ap_auth_server.Helpers;
 
 namespace ap_auth_server.Authorization
 {
     public class JwtMiddleware
     {
         private readonly RequestDelegate _next;
+        private readonly AppSettings _appSettings;
 
-        public JwtMiddleware(RequestDelegate next)
+        public JwtMiddleware(RequestDelegate next, IOptions<AppSettings> appSettings)
         {
             _next = next;
+            _appSettings = appSettings.Value;
         }
 
         public async Task Invoke(HttpContext context, IUserService userService, IJwtUtils jwtUtils)

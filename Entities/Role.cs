@@ -1,4 +1,4 @@
-﻿namespace ap_auth_server.Entities.Role
+﻿namespace ap_auth_server.Entities
 {
     public enum Role
     {

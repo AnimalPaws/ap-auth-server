@@ -103,7 +103,7 @@ namespace ap_auth_server.Services
 
                 if (_context.User.Any(x => x.Username == model.Username))
                 {
-                    throw new AppException("Username {0} is already taken", model.Username);
+                    throw new AppException("Username {0} is already taken, try with other", model.Username);
                 }
 
                 var user = _mapper.Map<User>(model);

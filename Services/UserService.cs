@@ -54,10 +54,11 @@ namespace ap_auth_server.Services
         // === AUTHENTIFICATION ===
         public UserAuthenticateResponse Authenticate(AuthenticateRequest model, string ipAddress)
         {
-            var user = _context.User.SingleOrDefault(x => x.Email == model.Username);
+            var user = _context.User.SingleOrDefault(
+                x => x.Email == model.Username || x.Username == model.Username);
             try
             {
-                if (model.Username != user.Email)
+                if (model.Username != user.Email || model.Username != user.Username)
                 {
                     throw new AppException("That account doesn't exists");
                 }
@@ -75,7 +76,7 @@ namespace ap_auth_server.Services
                 // Elimina antiguos refresh token
                 RemoveOldRefreshTokens(user);
 
-                // Guarda cambios
+                // Guarda cambios EVITE ESTOS COMENTARIOS COMO BUENA PRACTICA
                 _context.Update(user);
                 _context.SaveChanges();
 
@@ -92,6 +93,7 @@ namespace ap_auth_server.Services
 
         public void Register(UserRegisterRequest model, string origin)
         {
+            _context.Database.BeginTransaction();
             try
             {
                 if (_context.User.Any(x => x.Email == model.Email) ||
@@ -106,19 +108,28 @@ namespace ap_auth_server.Services
                     throw new AppException("Username {0} is already taken, try with other", model.Username);
                 }
 
+                UserProfile prof = new UserProfile();
+                prof.Picture = "";
+                prof.Biography = "Escribe aquí tus gustos e intereses";
+                _context.User_Profile.Add(prof);
+                _context.SaveChanges();
+
                 var user = _mapper.Map<User>(model);
                 user.Password = BCryptNet.HashPassword(model.Password);
                 user.Created_At = DateTime.UtcNow;
                 user.Role = Role.User;
                 user.VerificationToken = GenerateVerificationToken();
+                user.Profile_Id = prof.Id;
 
                 _context.User.Add(user);
                 _context.SaveChanges();
 
+                _context.Database.CommitTransaction();
                 SendVerificationEmail(user, origin);
             }
             catch (Exception ex)
             {
+                _context.Database.RollbackTransaction();
                 throw new AppException("Something was wrong: {0}", ex);
             }
         }
@@ -326,7 +337,7 @@ namespace ap_auth_server.Services
             {
                 // origin exists if request sent from browser single page app
                 // so send link to verify via single page app
-                var verifyUrl = $"{origin}/account/verify-email?token={user.VerificationToken}";
+                var verifyUrl = $"{origin}/auth/verify-email?token={user.VerificationToken}";
 
                 message = $@"
                         <div width=""670px"" align=""center"" background=""#fff"" border-color=""black"" border-width=""1px"">
@@ -334,12 +345,13 @@ namespace ap_auth_server.Services
                             <h1 font-size=""32px"">EMAIL CONFIRMATION</h1>
                             <span display=""inline-block"" vertical-align=""middle"" margin=""29px 0 26px"" border-bottom=""1px solid #cecece"" width=""100px""></span>
                             <br>
-                            <p color:#455056; font-size:15px;line-height:24px; margin:0;>Hello <strong>{user.Username}</strong></p>
+                            <p color:#455056; font-size:20px;line-height:24px; margin:0;>Hello <strong>{user.Username}</strong></p>
                             <p color:#455056; font-size:15px;line-height:24px; margin:0;>Thank you for signing up.
                                 Please click the below button to verify your email address</p>
                             <a href=""{verifyUrl}""
                             style=""background:#20e277;text-decoration:none !important; font-weight:500; margin-top:35px; color:#fff;text-transform:uppercase; font-size:14px;padding:10px 24px;display:inline-block;border-radius:50px"">
                             Confirm Email</a>
+                            <code>{user.VerificationToken}</code>
                         </div>
                         <p style=""text - align:center;font - size:14px; color: rgba(69, 80, 86, 0.7411764705882353); line - height:18px; margin: 0 0 0;""> &copy; <strong>AnimalPaws</strong></p>""
                         ";

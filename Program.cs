@@ -85,6 +85,7 @@ app.UseMiddleware<ErrorHandlerMiddleware>();
 // Custom JWT Middleware de autentificación
 app.UseMiddleware<JwtMiddleware>();
 
+//
 app.UseCors(x => x
         .SetIsOriginAllowed(origin => true)
         .AllowAnyMethod()

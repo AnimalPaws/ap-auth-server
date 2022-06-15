@@ -32,7 +32,6 @@ namespace ap_auth_server.Entities.User
         public string? VerificationToken { get; set; }
         [NotMapped]
         public string? ResetToken { get; set; }
-        [NotMapped]
         public List<RefreshToken> RefreshTokens { get; set; }
 
         public bool OwnsToken(string token)
@@ -41,9 +40,9 @@ namespace ap_auth_server.Entities.User
         }
        
         //public DateTime? Updated_At { get; set; }
-        //public int? Profile_Id { get; set; }
+        public int? Profile_Id { get; set; }
 
-        //public virtual UserProfile Profile { get; set; }
+        //public virtual UserProfile Profile{ get; set; }
 
     }
 }

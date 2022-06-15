@@ -40,7 +40,7 @@ namespace ap_auth_server.Authorization
 
         public string GenerateToken(User user)
         {
-            // generate token that is valid for 7 days
+            // generate token that is valid for 15 minutes
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -55,7 +55,7 @@ namespace ap_auth_server.Authorization
 
         public string GenerateToken(Foundation foundation)
         {
-            // generate token that is valid for 7 days
+            // generate token that is valid for 15 minutes
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -70,7 +70,7 @@ namespace ap_auth_server.Authorization
 
         public string GenerateToken(Veterinary veterinary)
         {
-            // generate token that is valid for 7 days
+            // generate token that is valid for 15 minutes
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
             var tokenDescriptor = new SecurityTokenDescriptor

@@ -25,28 +25,10 @@ namespace ap_auth_server.Models.Users
         public DateTime? Updated_At { get; set; }
         //public int? Profile_Id { get; set; }
 
-        //public virtual UserProfile Profile { get; set; }
+        public virtual UserProfile Profile { get; set; }
         public string? Token { get; set; }
 
         [JsonIgnore] // refresh token is returned in http only cookie
         public string RefreshToken { get; set; }
-
-        /* public UserAuthenticateResponse(User user, string token)
-        {
-            Id = user.Id;
-            First_Name = user.First_Name;
-            Middle_Name = user.Middle_Name;
-            Surname = user.Surname;
-            Last_Name = user.Last_Name;
-            Username = user.Username;
-            Sex = user.Sex;
-            Email = user.Email;
-            Phone_Number = user.Phone_Number;
-            Birthdate = user.Birthdate;
-            Department = user.Department;
-            City = user.City;
-            Created_At = user.Created_At;
-            Token = token;
-        }*/
     }
 }

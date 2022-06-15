@@ -80,7 +80,7 @@ namespace ap_auth_server.Controllers
                     //SetTokenCookie(veterinary.RefreshToken);
                     return Ok(veterinary);
                 }
-                return Ok(response);
+                return Ok(new { Message = "Welcome"});
             }
             catch (BadHttpRequestException ex)
             {
@@ -159,7 +159,7 @@ namespace ap_auth_server.Controllers
         {
             _userService.VerifyEmail(model.Token);
             return Ok(new
-            { 
+            {
                 message = "Verification successful, you can now login",
                 Status = 200
             });

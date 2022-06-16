@@ -54,11 +54,11 @@ namespace ap_auth_server.Services
         // === AUTHENTIFICATION ===
         public UserAuthenticateResponse Authenticate(AuthenticateRequest model, string ipAddress)
         {
-            var user = _context.User.SingleOrDefault(
-                x => x.Email == model.Username || x.Username == model.Username);
             try
             {
-                if (model.Username != user.Email || model.Username != user.Username)
+                var user = _context.User.FirstOrDefault(x => x.Email == model.Username);
+
+                if (model.Username != user.Email)
                 {
                     throw new AppException("That account doesn't exists");
                 }
@@ -76,12 +76,11 @@ namespace ap_auth_server.Services
                 // Elimina antiguos refresh token
                 RemoveOldRefreshTokens(user);
 
-                // Guarda cambios EVITE ESTOS COMENTARIOS COMO BUENA PRACTICA
                 _context.Update(user);
                 _context.SaveChanges();
 
                 var response = _mapper.Map<UserAuthenticateResponse>(user);
-                response.Token = _jwtUtils.GenerateToken(user);
+                response.Token = jwtToken;
                 response.RefreshToken = refreshToken.Token;
                 return response;
             }

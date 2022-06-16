@@ -18,14 +18,14 @@ namespace ap_auth_server.Authorization
             _appSettings = appSettings.Value;
         }
 
-        public async Task Invoke(HttpContext context, IUserService userService, IJwtUtils jwtUtils)
+        public async Task Invoke(HttpContext context, DataContext dataContext, IJwtUtils jwtUtils)
         {
             var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-            var userId = jwtUtils.ValidateToken(token);
-            if (userId != null)
+            var id = jwtUtils.ValidateToken(token);
+            if (id != null)
             {
                 // attach user to context on successful jwt validation
-                context.Items["User"] = userService.GetById(userId.Value);
+                context.Items["User"] = dataContext.User.FindAsync(id);
             }
 
             await _next(context);

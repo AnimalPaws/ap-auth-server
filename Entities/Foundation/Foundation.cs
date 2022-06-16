@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace ap_auth_server.Entities.Foundation
 {
@@ -17,6 +18,7 @@ namespace ap_auth_server.Entities.Foundation
         //public bool Is_Blocked { get; set; }
         //public bool Is_Restricted { get; set; }
         public DateTime Created_At { get; set; }
+        [NotMapped]
         public List<RefreshToken> RefreshTokens { get; set; }
 
         public bool OwnsToken(string token)

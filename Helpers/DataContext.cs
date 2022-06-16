@@ -24,5 +24,6 @@ namespace ap_auth_server.Helpers
         public DbSet<UserProfile> User_Profile { get; set; }
         public DbSet<Veterinary> Veterinary { get; set; }
         public DbSet<Foundation> Foundation { get; set; }
+        public DbSet<RefreshToken> RefreshToken { get; set; }
     }
 }

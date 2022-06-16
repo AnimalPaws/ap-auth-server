@@ -103,10 +103,10 @@ namespace ap_auth_server.Authorization
                 }, out SecurityToken validatedToken);
 
                 var jwtToken = (JwtSecurityToken)validatedToken;
-                var accountId = int.Parse(jwtToken.Claims.First(x => x.Type == "id").Value);
+                var id = int.Parse(jwtToken.Claims.First(x => x.Type == "id").Value);
 
                 // return user id from JWT token if validation successful
-                return accountId;
+                return id;
             }
             catch
             {

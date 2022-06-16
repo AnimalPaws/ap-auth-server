@@ -55,9 +55,7 @@ namespace ap_auth_server.Controllers
         {
             try
             {
-                var response = (_context.User.Any(x => x.Email == model.Username) ||
-                _context.Foundation.Any(x => x.Email == model.Username) ||
-                _context.Veterinary.Any(x => x.Email == model.Username));
+                var response = (_context.User.Any(x => x.Email == model.Username));
 
                 // Accede al servicio y retorna los datos si el email es de USUARIO
                 if (response = _context.User.Any(x => x.Email == model.Username))
@@ -80,7 +78,7 @@ namespace ap_auth_server.Controllers
                     //SetTokenCookie(veterinary.RefreshToken);
                     return Ok(veterinary);
                 }
-                return Ok(new { Message = "Welcome"});
+                return Ok(response);
             }
             catch (BadHttpRequestException ex)
             {

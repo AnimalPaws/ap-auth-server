@@ -25,7 +25,7 @@ namespace ap_auth_server.Models.Users
         public DateTime? Updated_At { get; set; }
         //public int? Profile_Id { get; set; }
 
-        public virtual UserProfile Profile { get; set; }
+        public int Profile_Id { get; set; }
         public string? Token { get; set; }
 
         [JsonIgnore] // refresh token is returned in http only cookie

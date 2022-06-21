@@ -25,10 +25,8 @@ namespace ap_auth_server.Services
         void ValidateResetToken(ValidateResetTokenRequest model);
         void ResetPassword(ResetPasswordRequest model);
         User GetById(int id);
-        /*IEnumerable<User> GetAll();*/
-        /*void Update(int id, UpdateRequest model);
-        void Delete(int id);*/
     }
+
     public class UserService : IUserService
     {
         private DataContext _context;
@@ -62,10 +60,16 @@ namespace ap_auth_server.Services
                 {
                     throw new AppException("That account doesn't exists");
                 }
-
-                if (user == null || !BCryptNet.Verify(model.Password, user.Password))
+                if (user.IsVerified)
                 {
-                    throw new AppException("Invalid credentials, please try again");
+                    if (user == null || !BCryptNet.Verify(model.Password, user.Password))
+                    {
+                        throw new AppException("Invalid credentials, please try again");
+                    }
+                }
+                else
+                {
+                    throw new AppException("Please verify your email address");
                 }
 
                 // Si la validación es correcta, asigna token y refresh token
@@ -107,12 +111,15 @@ namespace ap_auth_server.Services
                     throw new AppException("Username {0} is already taken, try with other", model.Username);
                 }
 
+                // Generación del perfil
                 UserProfile prof = new UserProfile();
-                prof.Picture = "";
-                prof.Biography = "Escribe aquí tus gustos e intereses";
+                var picture = "https://i.imgur.com/JGmoHaP.jpeg";
+                prof.Picture = picture;
+                prof.Biography = "En esta sección se mostrarán tus gustos e intereses.";
                 _context.User_Profile.Add(prof);
                 _context.SaveChanges();
 
+                // Mapeo del usuario
                 var user = _mapper.Map<User>(model);
                 user.Password = BCryptNet.HashPassword(model.Password);
                 user.Created_At = DateTime.UtcNow;
@@ -199,6 +206,7 @@ namespace ap_auth_server.Services
             if (user == null)
                 throw new AppException("Verification failed");
 
+            user.Verified = DateTime.UtcNow;
             user.VerificationToken = null;
 
             _context.User.Update(user);
@@ -339,20 +347,105 @@ namespace ap_auth_server.Services
                 var verifyUrl = $"{origin}/auth/verify-email?token={user.VerificationToken}";
 
                 message = $@"
-                        <div width=""670px"" align=""center"" background=""#fff"" border-color=""black"" border-width=""1px"">
-                        <img src=""https://animalpaws.azurewebsites.net/assets/img/HomeScreen/logo_ap.png""></img>
-                            <h1 font-size=""32px"">EMAIL CONFIRMATION</h1>
-                            <span display=""inline-block"" vertical-align=""middle"" margin=""29px 0 26px"" border-bottom=""1px solid #cecece"" width=""100px""></span>
-                            <br>
-                            <p color:#455056; font-size:20px;line-height:24px; margin:0;>Hello <strong>{user.Username}</strong></p>
-                            <p color:#455056; font-size:15px;line-height:24px; margin:0;>Thank you for signing up.
-                                Please click the below button to verify your email address</p>
-                            <a href=""{verifyUrl}""
-                            style=""background:#20e277;text-decoration:none !important; font-weight:500; margin-top:35px; color:#fff;text-transform:uppercase; font-size:14px;padding:10px 24px;display:inline-block;border-radius:50px"">
-                            Confirm Email</a>
-                            <code>{user.VerificationToken}</code>
-                        </div>
-                        <p style=""text - align:center;font - size:14px; color: rgba(69, 80, 86, 0.7411764705882353); line - height:18px; margin: 0 0 0;""> &copy; <strong>AnimalPaws</strong></p>""
+                        <body style=""background-color: #f4f4f4; margin: 0 !important; padding: 0 !important;"">
+
+                            <div style=""display: none; font-size: 1px; color: #fefefe; line-height: 1px; font-family: 'Lato', Helvetica, Arial, sans-serif; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;"">
+                                We're thrilled to have you here! Get ready to dive into your new account.
+                            </div>
+
+                            <table border=""0"" cellpadding=""0"" cellspacing=""0"" width=""100%"">
+                                <tr>
+                                    <td bgcolor=""#539be2"" align=""center"">
+                                        <table align=""center"" border=""0"" cellspacing=""0"" cellpadding=""0"" width=""600"">
+                                        <tr>
+                                        <td align=""center"" valign=""top"" width=""600"">
+                                        <table border=""0"" cellpadding=""0"" cellspacing=""0"" width=""100%"" style=""max-width: 600px;"">
+                                            <tr>
+                                                <td align=""center"" valign=""top"" style=""padding: 40px 10px 40px 10px;"">
+                                                    <a href=""{origin}"" target=""_blank"">
+                                                        <img alt=""Logo"" src=""https://animalpaws.azurewebsites.net/assets/img/HomeScreen/logo_ap.png"" width=""100%"" height=""100%"" style=""display: block; width: 100%; max-width: 50%; min-width: 40px; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px;"" border=""0"">
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        </td>
+                                        </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td bgcolor=""#539be2"" align=""center"" style=""padding: 0px 10px 0px 10px;"">
+                                        <table align=""center"" border=""0"" cellspacing=""0"" cellpadding=""0"" width=""600"">
+                                        <tr>
+                                        <td align=""center"" valign=""top"" width=""600"">
+                                        <table border=""0"" cellpadding=""0"" cellspacing=""0"" width=""100%"" style=""max-width: 600px;"">
+                                            <tr>
+                                                <td bgcolor=""#ffffff"" align=""center"" valign=""top"" style=""padding: 40px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #111111; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 4px; line-height: 48px;"">
+                                                    <h1 style=""font-size: 48px; font-weight: 400; margin: 0;"">EMAIL CONFIRMATION</h1>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        </td>
+                                        </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td bgcolor=""#f4f4f4"" align=""center"" style=""padding: 0px 10px 0px 10px;"">
+                                        <table align=""center"" border=""0"" cellspacing=""0"" cellpadding=""0"" width=""600"">
+                                        <tr>
+                                        <td align=""center"" valign=""top"" width=""600"">
+                                        <![endif]–>
+                                        <table border=""0"" cellpadding=""0"" cellspacing=""0"" width=""100%"" style=""max-width: 600px;"">
+                                            <!– COPY –>
+                                            <tr>
+                                                <td bgcolor=""#ffffff"" align=""center"" style=""padding: 20px 30px 40px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;"">
+                                                    <p>Hello <strong>{user.Username}</strong></p>
+                                                    <p>Thank you for signing up.
+                                                        Please click the below button to verify your email address</p>
+                                                    <a href=""{verifyUrl}""
+                                                    style=""background:#20e277;text-decoration:none !important; font-weight:500; margin-top:35px; color:#fff;text-transform:uppercase; font-size:14px;padding:10px 24px;display:inline-block;border-radius:50px"">
+                                                    <strong>Confirm Email</strong></a>
+                                                    <br><br>
+                                                    If button doesn't work, copy the following token:
+                                                    <br><br>
+                                                    <code>{user.VerificationToken}</code>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        </td>
+                                        </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td bgcolor=""#f4f4f4"" align=""center"" style=""padding: 0px 10px 0px 10px;"">
+                                        <table align=""center"" border=""0"" cellspacing=""0"" cellpadding=""0"" width=""600"">
+                                        <tr>
+                                        <td align=""center"" valign=""top"" width=""600"">
+                                        <table border=""0"" cellpadding=""0"" cellspacing=""0"" width=""100%"" style=""max-width: 600px;"">
+                                            <tr>
+                                                <td bgcolor=""#f4f4f4"" align=""left"" style=""padding: 30px 30px 30px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 400; line-height: 18px;"">
+                                                    <p style=""margin: 0;"">
+                                                        <a href=""{origin}"" target=""_blank"" style=""color: #111111; font-weight: 700;"">Home</a> –
+                                                        <a href=""{origin}/ContactUs"" target=""_blank"" style=""color: #111111; font-weight: 700;"">Support</a> –
+                                                        <a href=""{origin}/AboutUs"" target=""_blank"" style=""color: #111111; font-weight: 700;"">About Us</a>
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td bgcolor=""#f4f4f4"" align=""left"" style=""padding: 0px 30px 30px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 400; line-height: 18px;"">
+                                                    <p style=""margin: 0;"">&copy; AnimalPaws</p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        </td>
+                                        </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </body>
                         ";
             }
             else
@@ -378,21 +471,34 @@ namespace ap_auth_server.Services
             string message;
             if (!string.IsNullOrEmpty(origin))
             {
-                var resetUrl = $"{origin}/account/reset-password?token={user.ResetToken}";
-                message = $@"<p>Please click the below link to reset your password, the link will be valid for 1 day:</p>
-                            <p><a href=""{resetUrl}"">{resetUrl}</a></p>";
+                var resetUrl = $"{origin}/auth/reset-password?token={user.ResetToken}";
+                message = $@"
+                        <div width=""670px"" align=""center"" background=""#fff"" border-color=""black"" border-width=""1px"">
+                        <img src=""https://animalpaws.azurewebsites.net/assets/img/HomeScreen/logo_ap.png""></img>
+                            <h1 font-size=""32px"">RESET PASSWORD</h1>
+                            <span display=""inline-block"" vertical-align=""middle"" margin=""29px 0 26px"" border-bottom=""1px solid #cecece"" width=""100px""></span>
+                            <br>
+                            <p color:#455056; font-size:20px;line-height:24px; margin:0;>Hello <strong>{user.Username}</strong></p>
+                            <p color:#455056; font-size:15px;line-height:24px; margin:0;>We see that you forgot your password.
+                                Please click the below button to reset your password</p>
+                            <a href=""{resetUrl}""
+                            style=""background:#20e277;text-decoration:none !important; font-weight:500; margin-top:35px; color:#fff;text-transform:uppercase; font-size:14px;padding:10px 24px;display:inline-block;border-radius:50px"">
+                            Reset Password</a>
+                            <code>{user.ResetToken}</code>
+                        </div>
+                        <p style=""text - align:center;font - size:14px; color: rgba(69, 80, 86, 0.7411764705882353); line - height:18px; margin: 0 0 0;""> &copy; <strong>AnimalPaws</strong></p>""
+                        ";
             }
             else
             {
-                message = $@"<p>Please use the below token to reset your password with the <code>/accounts/reset-password</code> api route:</p>
+                message = $@"<p>Please use the below token to reset your password with the <code>/auth/reset-password</code> api route:</p>
                             <p><code>{user.ResetToken}</code></p>";
             }
 
             _emailService.Send(
                 to: user.Email,
                 subject: "AnimalPaws - Reset Password",
-                html: $@"<h4>Reset Password Email</h4>
-                        {message}"
+                html: $@"{message}"
             );
         }
 

@@ -14,6 +14,7 @@ using ap_auth_server.Models.Veterinary;
 using ap_auth_server.Entities.User;
 using ap_auth_server.Entities.Foundation;
 using ap_auth_server.Entities.Veterinary;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,7 +44,11 @@ IMapper mapper = config.CreateMapper();
     services.AddDbContext<DataContext>(option => option.UseMySQL(builder.Configuration.GetConnectionString("APDatabase")));
 
     // Controllers and cors policies
-    services.AddControllers();
+    services.AddControllers().AddJsonOptions(x =>
+    {
+        // serialize enums as strings in api responses (e.g. Role)
+        x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
     services.AddCors();
     services.AddHttpContextAccessor();
     services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -55,13 +60,14 @@ IMapper mapper = config.CreateMapper();
     services.AddScoped<IUserService, UserService>();
     services.AddScoped<IFoundationService, FoundationService>();
     services.AddScoped<IVeterinaryService, VeterinaryService>();
+    services.AddScoped<IEmailService, EmailService>();
 
     // AutoMapper
     services.AddSingleton(mapper);
     services.AddAutoMapper(typeof(AutoMapperProfile));
 
     // AppSettings configuration
-    services.Configure<AppSettings>(configuration.GetSection("AppSettings"));
+    services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 }
 
 var app = builder.Build();
@@ -70,7 +76,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(x => x.SwaggerEndpoint("/swagger/v1/swagger.json", "AnimalPaws Auth Server"));
 }
 
 // Global error handler
@@ -79,10 +85,12 @@ app.UseMiddleware<ErrorHandlerMiddleware>();
 // Custom JWT Middleware de autentificación
 app.UseMiddleware<JwtMiddleware>();
 
+//
 app.UseCors(x => x
-    .AllowAnyHeader()
-    .AllowAnyMethod()
-    .AllowAnyOrigin());
+        .SetIsOriginAllowed(origin => true)
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials());
 
 app.UseHttpsRedirection();
 

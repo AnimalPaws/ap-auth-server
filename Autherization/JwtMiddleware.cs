@@ -25,7 +25,7 @@ namespace ap_auth_server.Authorization
             if (id != null)
             {
                 // attach user to context on successful jwt validation
-                context.Items["User"] = dataContext.User.FindAsync(id);
+                context.Items["User"] = dataContext.User.FindAsync(id.Value);
             }
 
             await _next(context);

@@ -15,7 +15,6 @@ namespace ap_auth_server.Entities.User
         public string? Email { get; set; }
         [JsonIgnore]
         public string? Password { get; set; }
-        [NotMapped]
         public Role Role { get; set; }
         public string? Phone_Number { get; set; }
         public DateTime Birthdate { get; set; }

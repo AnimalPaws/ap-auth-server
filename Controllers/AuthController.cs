@@ -64,21 +64,33 @@ namespace ap_auth_server.Controllers
                 {
                     var user = _userService.Authenticate(model, IpAddress());
                     SetTokenCookie(user.RefreshToken);
-                    return Ok(user);
+                    return Ok(new
+                    {
+                        message = "Logged successful",
+                        Status = 200
+                    });
                 }
                 // Accede al servicio y retorna los datos si el email es de FUNDACIÓN
                 else if (response = _context.Foundation.Any(x => x.Email == model.Username))
                 {
                     var foundation = _foundationService.Authenticate(model, IpAddress());
-                    //SetTokenCookie(foundation.RefreshToken);
-                    return Ok(foundation);
+                    SetTokenCookie(foundation.RefreshToken);
+                    return Ok(new
+                    {
+                        message = "Logged successful",
+                        Status = 200
+                    });
                 }
                 // Accede al servicio y retorna los datos si el email es de VETERINARIO
                 else if (response = _context.Veterinary.Any(x => x.Email == model.Username))
                 {
                     var veterinary = _veterinaryService.Authenticate(model, IpAddress());
-                    //SetTokenCookie(veterinary.RefreshToken);
-                    return Ok(veterinary);
+                    SetTokenCookie(veterinary.RefreshToken);
+                    return Ok(new
+                    {
+                        message = "Logged successful",
+                        Status = 200
+                    });
                 }
                 return Ok(response);
             }
@@ -157,13 +169,37 @@ namespace ap_auth_server.Controllers
         [HttpPost("verify-email")]
         public IActionResult VerifyEmail(VerifyEmailRequest model)
         {
-            _userService.VerifyEmail(model.Token);
-            _foundationService.VerifyEmail(model.Token);
-            return Ok(new
+            try
             {
-                message = "Verification successful, you can now login",
-                Status = 200
-            });
+                var response = (_context.User.Any(x => x.VerificationToken == model.Token) ||
+                    (_context.Foundation.Any(x => x.VerificationToken == model.Token)));
+
+                if (response = _context.User.Any(x => x.VerificationToken == model.Token))
+                {
+                    _userService.VerifyEmail(model.Token);
+                    return Ok(new
+                    {
+                        message = "Verification successful, you can now login",
+                        Status = 200
+                    });
+                }
+                
+                else if (response = _context.Foundation.Any(x => x.VerificationToken == model.Token))
+                {
+                    _foundationService.VerifyEmail(model.Token);
+                    return Ok(new
+                    {
+                        message = "Verification successful, you can now login",
+                        Status = 200
+                    });
+                }
+
+                return Ok(response);
+            }
+            catch (BadHttpRequestException ex)
+            {
+                throw new AppException("Something was wrong: {0}", ex);
+            }
         }
 
         // RECOVERY AND PASSWORD RESET
@@ -171,35 +207,106 @@ namespace ap_auth_server.Controllers
         [HttpPost("recovery")]
         public IActionResult RecoveryPassword(RecoveryPasswordRequest model)
         {
-            _userService.Recovery(model, Request.Headers["origin"]);
-            _foundationService.Recovery(model, Request.Headers["origin"]);
-            return Ok(new { message = "Please check your email for password reset instructions" });
+            try
+            {
+                var response = (_context.User.Any(x => x.Email == model.Email) ||
+                    (_context.Foundation.Any(x => x.Email == model.Email)));
+
+                if (response = _context.User.Any(x => x.Email == model.Email))
+                {
+                    _userService.Recovery(model, Request.Headers["origin"]);
+                    return Ok(new { 
+                        message = "Please check your email for password reset instructions", 
+                        Status = 200
+                    });
+                }
+
+                else if (response = _context.Foundation.Any(x => x.Email == model.Email))
+                {
+                    _foundationService.Recovery(model, Request.Headers["origin"]);
+                    return Ok(new
+                    {
+                        message = "Please check your email for password reset instructions",
+                        Status = 200
+                    });
+                }
+                
+                return Ok(response);
+            }
+            catch (BadHttpRequestException ex)
+            {
+                throw new AppException("Something was wrong: {0}", ex);
+            }
         }
 
         [AllowAnonymous]
         [HttpPost("reset-password")]
         public IActionResult ResetPassword(ResetPasswordRequest model)
         {
-            _userService.ResetPassword(model);
-            _foundationService.ResetPassword(model);
-            return Ok(new 
-            { 
-                message = "Your password has been changed. Now you can login",
-                Status = 200
-            });
+            try
+            {
+                var response = (_context.User.Any(x => x.ResetToken == model.Token) ||
+                    (_context.Foundation.Any(x => x.ResetToken == model.Token)));
+
+                if (response = _context.User.Any(x => x.ResetToken == model.Token))
+                {
+                    _userService.ResetPassword(model);
+                    return Ok(new
+                    {
+                        message = "Your password has been changed. Now you can login",
+                        Status = 200
+                    });
+                }
+
+                else if (response = _context.Foundation.Any(x => x.ResetToken == model.Token))
+                {
+                    _foundationService.ResetPassword(model);
+                    return Ok(new
+                    {
+                        message = "Your password has been changed. Now you can login",
+                        Status = 200
+                    });
+                }
+
+                return Ok(response);
+            }
+            catch (BadHttpRequestException ex)
+            {
+                throw new AppException("Something was wrong: {0}", ex);
+            }
         }
 
         // === TOKENS ===
         
         [AllowAnonymous]
-        [HttpPost("refresh-token")]
-        public ActionResult<UserAuthenticateResponse> RefreshToken()
+        [HttpPost("refresh-token/user")]
+        public ActionResult<UserAuthenticateResponse> UserRefreshToken()
         {
             var refreshToken = Request.Cookies["refreshToken"];
             var response = (_userService.RefreshToken(refreshToken, IpAddress()));
             SetTokenCookie(response.RefreshToken);
             return Ok(response);
         }
+
+        [AllowAnonymous]
+        [HttpPost("refresh-token/foundation")]
+        public ActionResult<FoundationAuthenticateResponse> FoundationRefreshToken()
+        {
+            var refreshToken = Request.Cookies["refreshToken"];
+            var response = (_foundationService.RefreshToken(refreshToken, IpAddress()));
+            SetTokenCookie(response.RefreshToken);
+            return Ok(response);
+        }
+
+        /*[AllowAnonymous]
+        [HttpPost("refresh-token/veterinary")]
+        public ActionResult<VeterinaryAuthenticateResponse> VeterinaryRefreshToken()
+        {
+            var refreshToken = Request.Cookies["refreshToken"];
+            var response = (_veterinaryService.RefreshToken(refreshToken, IpAddress()));
+            SetTokenCookie(response.RefreshToken);
+            return Ok(response);
+        }*/
 
         [HttpPost("revoke-token")]
         public IActionResult RevokeToken(RevokeTokenRequest model)
@@ -230,9 +337,37 @@ namespace ap_auth_server.Controllers
         [HttpPost("validate-reset-token")]
         public IActionResult ValidateResetToken(ValidateResetTokenRequest model)
         {
-            _userService.ValidateResetToken(model);
-            _foundationService.ValidateResetToken(model);
-            return Ok(new { message = "Token is valid" });
+            try
+            {
+                var response = (_context.User.Any(x => x.ResetToken == model.Token) ||
+                    (_context.Foundation.Any(x => x.ResetToken == model.Token)));
+
+                if (response = _context.User.Any(x => x.ResetToken == model.Token))
+                {
+                    _userService.ValidateResetToken(model);
+                    return Ok(new
+                    {
+                        message = "Token is valid",
+                        Status = 200
+                    });
+                }
+
+                else if (response = _context.Foundation.Any(x => x.ResetToken == model.Token))
+                {
+                    _foundationService.ValidateResetToken(model);
+                    return Ok(new
+                    {
+                        message = "Token is valid",
+                        Status = 200
+                    });
+                }
+
+                return Ok(response);
+            }
+            catch (BadHttpRequestException ex)
+            {
+                throw new AppException("Something was wrong: {0}", ex);
+            }
         }
 
         // HELPER METHODS

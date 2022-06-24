@@ -209,6 +209,7 @@ namespace ap_auth_server.Services
                 throw new AppException("Verification failed");
 
             foundation.Verified = DateTime.UtcNow;
+            foundation.IsVerified = true;
             foundation.VerificationToken = null;
 
             _context.Foundation.Update(foundation);

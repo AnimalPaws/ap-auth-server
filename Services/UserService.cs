@@ -123,6 +123,7 @@ namespace ap_auth_server.Services
 
                 // Mapeo del usuario
                 var user = _mapper.Map<User>(model);
+                model.Username.ToLower();
                 user.Password = BCryptNet.HashPassword(model.Password);
                 user.Created_At = DateTime.UtcNow;
                 user.Role = Role.User;
@@ -203,12 +204,14 @@ namespace ap_auth_server.Services
         // === VERIFY AND RECOVERY ===
         public void VerifyEmail(string token)
         {
+
             var user = _context.User.SingleOrDefault(x => x.VerificationToken == token);
 
             if (user == null)
                 throw new AppException("Verification failed");
 
             user.Verified = DateTime.UtcNow;
+            user.IsVerified = true;
             user.VerificationToken = null;
 
             _context.User.Update(user);
@@ -403,7 +406,7 @@ namespace ap_auth_server.Services
                                                     style=""background:#20e277;text-decoration:none !important; font-weight:500; margin-top:35px; color:#fff;text-transform:uppercase; font-size:14px;padding:10px 24px;display:inline-block;border-radius:50px"">
                                                     <strong>Confirmar</strong></a>
                                                     <br><br>
-                                                    Si el botón no funciona, copia el siguiente 
+                                                    Si el botón no funciona, copia el siguiente token:
                                                     <br><br>
                                                     <code>{user.VerificationToken}</code>
                                                 </td>

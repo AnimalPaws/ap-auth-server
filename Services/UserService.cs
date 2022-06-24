@@ -115,12 +115,12 @@ namespace ap_auth_server.Services
                     throw new AppException("Username {0} is already taken, try with other", model.Username);
                 }
 
-                // Generación del perfil
-                UserProfile prof = new UserProfile();
+                // Generación del perfil 
+                UserProfile profile = new UserProfile();
                 var picture = "https://i.imgur.com/JGmoHaP.jpeg";
-                prof.Picture = picture; 
-                prof.Biography = "En esta sección se mostrarán tus gustos e intereses.";
-                _context.User_Profile.Add(prof);
+                profile.Picture = picture; 
+                profile.Biography = "En esta sección se mostrarán tus gustos e intereses.";
+                _context.User_Profile.Add(profile);
                 _context.SaveChanges();
 
                 // Mapeo del usuario
@@ -129,7 +129,7 @@ namespace ap_auth_server.Services
                 user.Created_At = DateTime.UtcNow;
                 user.Role = Role.User;
                 user.VerificationToken = GenerateVerificationToken();
-                user.Profile_Id = prof.Id;
+                user.Profile_Id = profile.Id;
 
                 _context.User.Add(user);
                 _context.SaveChanges();

@@ -1,5 +1,5 @@
-﻿using ap_auth_server.Entities.User;
-using ap_auth_server.Models.Foundation;
+﻿using ap_auth_server.Entities.Users;
+using ap_auth_server.Models.Foundations;
 using AutoMapper;
 
 namespace ap_auth_server.Helpers

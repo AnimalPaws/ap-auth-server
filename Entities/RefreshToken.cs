@@ -1,15 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
-
-namespace ap_auth_server.Entities.User
+using ap_auth_server.Entities.Users;
+using ap_auth_server.Entities.Foundations;
+using ap_auth_server.Entities.Veterinaries;
+namespace ap_auth_server.Entities
 {
     [Owned]
     public class RefreshToken
     {
         [Key]
         public int Id { get; set; }
-        public User User { get; set; }
+        public User Account { get; set; }
         public string? Token { get; set; }
         public string? Created_By_Ip { get; set; }
         public string? Revoked_By_Ip { get; set; }

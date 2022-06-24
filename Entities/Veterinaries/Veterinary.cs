@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-namespace ap_auth_server.Entities.Veterinary
+namespace ap_auth_server.Entities.Veterinaries
 {
     public class Veterinary
     {
@@ -14,19 +14,24 @@ namespace ap_auth_server.Entities.Veterinary
         public string? Department { get; set; }
         public string? City { get; set; }
         public string? Address { get; set; }
-        //public bool Email_Verified { get; set; }
-        //public bool Is_Blocked { get; set; }
-        //public bool Is_Restricted { get; set; }
-        public DateTime Created_At { get; set; }
-        /*[NotMapped]
+        public Role Role { get; set; }
+        public DateTime? Verified { get; set; }
+        public bool IsVerified => Verified.HasValue || PasswordReset.HasValue;
+        public bool Is_Blocked { get; set; }
+        public bool Is_Restricted { get; set; }
+        public DateTime? Created_At { get; set; }
+        public DateTime? Updated_At { get; set; }
+        public DateTime? Reset_Token_Expire { get; set; }
+        public DateTime? PasswordReset { get; set; }
+        public string? VerificationToken { get; set; }
+        public string? ResetToken { get; set; }
+        [NotMapped]
         public List<RefreshToken> RefreshTokens { get; set; }
 
         public bool OwnsToken(string token)
         {
             return this.RefreshTokens?.Find(x => x.Token == token) != null;
-        }*/
-        //public DateTime Updated_At { get; set; }
-        //public int? Profile_Id { get; set; }
-        //public virtual VeterinaryProfile Profile { get; set; }
+        }
+        public int? Profile_Id { get; set; }
     }
 }

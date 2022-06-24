@@ -8,11 +8,11 @@ using System.Text;
 using ap_auth_server.Models;
 using ap_auth_server.Services;
 using ap_auth_server.Helpers;
-using ap_auth_server.Entities.User;
-using ap_auth_server.Entities.Veterinary;
-using ap_auth_server.Entities.Foundation;
-using System.Security.Cryptography;
 using ap_auth_server.Entities;
+using ap_auth_server.Entities.Users;
+using ap_auth_server.Entities.Veterinaries;
+using ap_auth_server.Entities.Foundations;
+using System.Security.Cryptography;
 
 namespace ap_auth_server.Authorization
 {

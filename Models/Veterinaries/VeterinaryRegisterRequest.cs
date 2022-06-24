@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ap_auth_server.Models.Foundation
+namespace ap_auth_server.Models.Veterinaries
 {
-    public class FoundationRegisterRequest
+    public class VeterinaryRegisterRequest
     {
         [Required]
         public string? Name { get; set; }
@@ -21,3 +21,4 @@ namespace ap_auth_server.Models.Foundation
         public DateTime? CreatedAt { get; set; }
     }
 }
+    

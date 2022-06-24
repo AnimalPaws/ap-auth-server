@@ -1,4 +1,4 @@
-﻿namespace ap_auth_server.Models.Veterinary
+﻿namespace ap_auth_server.Models.Veterinaries
 {
     public class VeterinaryUpdateRequest
     {

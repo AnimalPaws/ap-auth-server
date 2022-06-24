@@ -3,8 +3,8 @@ using ap_auth_server.Services;
 using Microsoft.Extensions.Options;
 using ap_auth_server.Helpers;
 using ap_auth_server.Models.Users;
-using ap_auth_server.Models.Foundation;
-using ap_auth_server.Models.Veterinary;
+using ap_auth_server.Models.Foundations;
+using ap_auth_server.Models.Veterinaries;
 using AutoMapper;
 using ap_auth_server.Authorization;
 using ap_auth_server.Autherization;
@@ -55,7 +55,9 @@ namespace ap_auth_server.Controllers
         {
             try
             {
-                var response = (_context.User.Any(x => x.Email == model.Username));
+                var response = (_context.User.Any(x => x.Email == model.Username) ||
+                    (_context.Foundation.Any(x => x.Email == model.Username)) ||
+                    (_context.Veterinary.Any(x => x.Email == model.Username)));
 
                 // Accede al servicio y retorna los datos si el email es de USUARIO
                 if (response = _context.User.Any(x => x.Email == model.Username))
@@ -115,7 +117,7 @@ namespace ap_auth_server.Controllers
         {
             try
             {
-                _foundationService.Register(model);
+                _foundationService.Register(model, Request.Headers["origin"]);
                 return Ok(new
                 {
                     message = "Registration successful. Check your email",
@@ -156,6 +158,7 @@ namespace ap_auth_server.Controllers
         public IActionResult VerifyEmail(VerifyEmailRequest model)
         {
             _userService.VerifyEmail(model.Token);
+            _foundationService.VerifyEmail(model.Token);
             return Ok(new
             {
                 message = "Verification successful, you can now login",
@@ -169,6 +172,7 @@ namespace ap_auth_server.Controllers
         public IActionResult RecoveryPassword(RecoveryPasswordRequest model)
         {
             _userService.Recovery(model, Request.Headers["origin"]);
+            _foundationService.Recovery(model, Request.Headers["origin"]);
             return Ok(new { message = "Please check your email for password reset instructions" });
         }
 
@@ -177,6 +181,7 @@ namespace ap_auth_server.Controllers
         public IActionResult ResetPassword(ResetPasswordRequest model)
         {
             _userService.ResetPassword(model);
+            _foundationService.ResetPassword(model);
             return Ok(new 
             { 
                 message = "Your password has been changed. Now you can login",
@@ -191,7 +196,7 @@ namespace ap_auth_server.Controllers
         public ActionResult<UserAuthenticateResponse> RefreshToken()
         {
             var refreshToken = Request.Cookies["refreshToken"];
-            var response = _userService.RefreshToken(refreshToken, IpAddress());
+            var response = (_userService.RefreshToken(refreshToken, IpAddress()));
             SetTokenCookie(response.RefreshToken);
             return Ok(response);
         }
@@ -209,7 +214,15 @@ namespace ap_auth_server.Controllers
             if (!User.OwnsToken(token) && User.Role != Role.Admin)
                 return Unauthorized(new { message = "Unauthorized" });
 
+            else if (!Foundation.OwnsToken(token) && User.Role != Role.Admin)
+                return Unauthorized(new { message = "Unauthorized" });
+
+            else if (!Veterinary.OwnsToken(token) && User.Role != Role.Admin)
+                return Unauthorized(new { message = "Unauthorized" });
+
             _userService.RevokeToken(token, IpAddress());
+            _foundationService.RevokeToken(token, IpAddress());
+            //_veterinaryService.RevokeToken(token, IpAddress());
             return Ok(new { message = "Token revoked" });
         }
 
@@ -218,6 +231,7 @@ namespace ap_auth_server.Controllers
         public IActionResult ValidateResetToken(ValidateResetTokenRequest model)
         {
             _userService.ValidateResetToken(model);
+            _foundationService.ValidateResetToken(model);
             return Ok(new { message = "Token is valid" });
         }
 

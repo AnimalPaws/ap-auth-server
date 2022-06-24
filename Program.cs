@@ -9,11 +9,11 @@ using ap_auth_server.Services;
 using ap_auth_server.Authorization;
 using AutoMapper;
 using ap_auth_server.Models.Users;
-using ap_auth_server.Models.Foundation;
-using ap_auth_server.Models.Veterinary;
-using ap_auth_server.Entities.User;
-using ap_auth_server.Entities.Foundation;
-using ap_auth_server.Entities.Veterinary;
+using ap_auth_server.Models.Foundations;
+using ap_auth_server.Models.Veterinaries;
+using ap_auth_server.Entities.Users;
+using ap_auth_server.Entities.Foundations;
+using ap_auth_server.Entities.Veterinaries;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -16,7 +16,7 @@ namespace ap_auth_server.Entities.Users
         [JsonIgnore]
         public string Password { get; set; }
         public string? Phone_Number { get; set; }
-        public DateOnly Birthdate { get; set; }
+        public DateTime Birthdate { get; set; }
         public string Department { get; set; }
         public string City { get; set; }
         public Role Role { get; set; }

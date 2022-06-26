@@ -60,17 +60,17 @@ namespace ap_auth_server.Services
                 {
                     throw new AppException("That account doesn't exists");
                 }
-                if (foundation.IsVerified)
+                //if (foundation.IsVerified)
+                //{
+                if (foundation == null || !BCryptNet.Verify(model.Password, foundation.Password))
                 {
-                    if (foundation == null || !BCryptNet.Verify(model.Password, foundation.Password))
-                    {
-                        throw new AppException("Invalid credentials, please try again");
-                    }
+                    throw new AppException("Invalid credentials, please try again");
                 }
-                else
+                //}
+                /*else
                 {
                     throw new AppException("Please verify your email address");
-                }
+                }*/
 
                 // Si la validación es correcta, asigna token y refresh token
                 var jwtToken = _jwtUtils.GenerateToken(foundation);

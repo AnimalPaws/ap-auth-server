@@ -8,11 +8,10 @@ namespace ap_auth_server.Entities
     [Owned]
     public class RefreshToken
     {
-
-        public Dictionary<User, Foundation> AccountType;
         [Key]
         public int Id { get; set; }
-        public AccountType Account { get; set; }
+        public int UserId { get; set; }
+        public int FoundationId { get; set; }
         public string? Token { get; set; }
         public string? Created_By_Ip { get; set; }
         public string? Revoked_By_Ip { get; set; }
@@ -24,5 +23,8 @@ namespace ap_auth_server.Entities
         public bool IsExpired => DateTime.UtcNow >= Expire_At;
         public bool IsRevoked => Revoked != null;
         public bool IsActive => Revoked == null && !IsExpired;
+
+        public virtual User User { get; set; }
+        public virtual Foundation Foundation { get; set; }
     }
 }

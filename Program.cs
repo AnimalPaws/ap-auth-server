@@ -76,11 +76,11 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(x => 
-    { 
+    app.UseSwaggerUI(x =>
+    {
         x.SwaggerEndpoint("/swagger/v1/swagger.json", "AnimalPaws Auth Server");
         x.RoutePrefix = string.Empty;
-    });  
+    });
 }
 
 // Global error handler

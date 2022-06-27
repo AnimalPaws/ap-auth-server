@@ -2,8 +2,8 @@
 using BCryptNet = BCrypt.Net.BCrypt;
 using ap_auth_server.Helpers;
 using ap_auth_server.Authorization;
-using ap_auth_server.Models.Veterinary;
-using ap_auth_server.Entities.Veterinary;
+using ap_auth_server.Models.Veterinaries;
+using ap_auth_server.Entities.Veterinaries;
 using ap_auth_server.Models;
 
 namespace ap_auth_server.Services

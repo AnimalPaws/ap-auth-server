@@ -1,23 +1,17 @@
-﻿using ap_auth_server.Entities.User;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
-namespace ap_auth_server.Models.Users
+namespace ap_auth_server.Models.Veterinaries
 {
-    public class UserAuthenticateResponse
+    public class VeterinaryAuthenticateResponse
     {
-        public int? Id { get; set; }
-        public string? First_Name { get; set; }
-        public string? Middle_Name { get; set; }
-        public string? Surname { get; set; }
-        public string? Last_Name { get; set; }
-        public string? Username { get; set; }
-        public string? Sex { get; set; }
+        public int Id { get; set; }
+        public string? Name { get; set; }
         public string? Email { get; set; }
-        public string? Role { get; set; }
         public string? Phone_Number { get; set; }
-        public DateTime Birthdate { get; set; }
         public string? Department { get; set; }
         public string? City { get; set; }
+        public string? Address { get; set; }
+        public string? Role { get; set; }
         public bool IsVerified { get; set; }
         public bool Is_Blocked { get; set; }
         public bool Is_Restricted { get; set; }

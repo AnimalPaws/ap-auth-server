@@ -1,15 +1,17 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using ap_auth_server.Entities.Foundations;
+using ap_auth_server.Entities.Users;
+using ap_auth_server.Entities.Veterinaries;
 using Microsoft.EntityFrameworkCore;
-
-namespace ap_auth_server.Entities.User
+namespace ap_auth_server.Entities
 {
     [Owned]
     public class RefreshToken
     {
         [Key]
         public int Id { get; set; }
-        public User User { get; set; }
+        public int UserId { get; set; }
+        //public int FoundationId { get; set; }
         public string? Token { get; set; }
         public string? Created_By_Ip { get; set; }
         public string? Revoked_By_Ip { get; set; }
@@ -21,5 +23,8 @@ namespace ap_auth_server.Entities.User
         public bool IsExpired => DateTime.UtcNow >= Expire_At;
         public bool IsRevoked => Revoked != null;
         public bool IsActive => Revoked == null && !IsExpired;
+
+        public virtual User User { get; set; }
+        //public virtual Foundation Foundation { get; set; }
     }
 }

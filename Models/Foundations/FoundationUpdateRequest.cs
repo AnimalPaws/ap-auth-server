@@ -1,4 +1,4 @@
-﻿namespace ap_auth_server.Models.Foundation
+﻿namespace ap_auth_server.Models.Foundations
 {
     public class FoundationUpdateRequest
     {

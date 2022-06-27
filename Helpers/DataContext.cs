@@ -1,7 +1,7 @@
 ﻿using ap_auth_server.Entities;
-using ap_auth_server.Entities.Foundation;
-using ap_auth_server.Entities.User;
-using ap_auth_server.Entities.Veterinary;
+using ap_auth_server.Entities.Foundations;
+using ap_auth_server.Entities.Users;
+using ap_auth_server.Entities.Veterinaries;
 using Microsoft.EntityFrameworkCore;
 
 namespace ap_auth_server.Helpers
@@ -23,7 +23,9 @@ namespace ap_auth_server.Helpers
         public DbSet<User> User { get; set; }
         public DbSet<UserProfile> User_Profile { get; set; }
         public DbSet<Veterinary> Veterinary { get; set; }
+        public DbSet<VeterinaryProfile> Veterinary_Profile { get; set; }
         public DbSet<Foundation> Foundation { get; set; }
+        public DbSet<FoundationProfile> Foundation_Profile { get; set; }
         public DbSet<RefreshToken> RefreshToken { get; set; }
     }
 }

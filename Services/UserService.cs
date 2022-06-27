@@ -3,15 +3,13 @@ using BCryptNet = BCrypt.Net.BCrypt;
 using ap_auth_server.Helpers;
 using ap_auth_server.Authorization;
 using ap_auth_server.Models.Users;
-using ap_auth_server.Entities.User;
+using ap_auth_server.Entities.Users;
 using ap_auth_server.Models;
 using ap_auth_server.Models.Recovery;
 using ap_auth_server.Models.Jwt;
 using System.Security.Cryptography;
 using ap_auth_server.Entities;
-using System.Text;
 using Microsoft.Extensions.Options;
-using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace ap_auth_server.Services
@@ -62,17 +60,17 @@ namespace ap_auth_server.Services
                 {
                     throw new AppException("That account doesn't exists");
                 }
-                if (user.IsVerified)
+                //if (user.IsVerified)
+                //{
+                if (user == null || !BCryptNet.Verify(model.Password, user.Password))
                 {
-                    if (user == null || !BCryptNet.Verify(model.Password, user.Password))
-                    {
-                        throw new AppException("Invalid credentials, please try again");
-                    }
+                    throw new AppException("Invalid credentials, please try again");
                 }
-                else
+                //}
+                /*else
                 {
                     throw new AppException("Please verify your email address");
-                }
+                }*/
 
                 // Si la validación es correcta, asigna token y refresh token
                 var jwtToken = _jwtUtils.GenerateToken(user);
@@ -125,6 +123,7 @@ namespace ap_auth_server.Services
 
                 // Mapeo del usuario
                 var user = _mapper.Map<User>(model);
+                model.Username.ToLower();
                 user.Password = BCryptNet.HashPassword(model.Password);
                 user.Created_At = DateTime.UtcNow;
                 user.Role = Role.User;
@@ -205,12 +204,14 @@ namespace ap_auth_server.Services
         // === VERIFY AND RECOVERY ===
         public void VerifyEmail(string token)
         {
+
             var user = _context.User.SingleOrDefault(x => x.VerificationToken == token);
 
             if (user == null)
                 throw new AppException("Verification failed");
 
             user.Verified = DateTime.UtcNow;
+            user.IsVerified = true;
             user.VerificationToken = null;
 
             _context.User.Update(user);
@@ -283,7 +284,7 @@ namespace ap_auth_server.Services
         private string GenerateResetToken()
         {
             // token is a cryptographically strong random sequence of values
-            var token = Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
+            var token = Convert.ToHexString(RandomNumberGenerator.GetBytes(16));
 
             // ensure token is unique by checking against db
             var tokenIsUnique = !_context.User.Any(x => x.ResetToken == token);
@@ -296,7 +297,7 @@ namespace ap_auth_server.Services
         private string GenerateVerificationToken()
         {
             // token is a cryptographically strong random sequence of values
-            var token = Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
+            var token = Convert.ToHexString(RandomNumberGenerator.GetBytes(16));
 
             // ensure token is unique by checking against db
             var tokenIsUnique = !_context.User.Any(x => x.VerificationToken == token);
@@ -405,7 +406,7 @@ namespace ap_auth_server.Services
                                                     style=""background:#20e277;text-decoration:none !important; font-weight:500; margin-top:35px; color:#fff;text-transform:uppercase; font-size:14px;padding:10px 24px;display:inline-block;border-radius:50px"">
                                                     <strong>Confirmar</strong></a>
                                                     <br><br>
-                                                    Si el botón no funciona, copia el siguiente 
+                                                    Si el botón no funciona, copia el siguiente token:
                                                     <br><br>
                                                     <code>{user.VerificationToken}</code>
                                                 </td>
@@ -459,7 +460,7 @@ namespace ap_auth_server.Services
 
             _emailService.Send(
             to: user.Email,
-            subject: "AnimalPaws - Verify Email",
+            subject: "AnimalPaws - Confirmación de correo electrónico",
             html: $@"{message}"
             );
         }
@@ -518,14 +519,14 @@ namespace ap_auth_server.Services
                                         <table border=""0"" cellpadding=""0"" cellspacing=""0"" width=""100%"" style=""max-width: 600px;"">
                                             <tr>
                                                 <td bgcolor=""#ffffff"" align=""center"" style=""padding: 20px 30px 40px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;"">
-                                                    <p>Hello <strong>{user.Username}</strong></p>
-                                                    <p>Thank you for signing up.
-                                                        Please click the below button to verify your email address</p>
+                                                    <p>Hola <strong>{user.Username}</strong></p>
+                                                    <p>Al parecer has olvidado tu contraseña y quiere reestablecerla.
+                                                        Por favor has clic en el botón de abajo para cambiar tu contraseña</p>
                                                     <a href=""{resetUrl}""
                                                     style=""background:#20e277;text-decoration:none !important; font-weight:500; margin-top:35px; color:#fff;text-transform:uppercase; font-size:14px;padding:10px 24px;display:inline-block;border-radius:50px"">
-                                                    <strong>Confirm Email</strong></a>
+                                                    <strong>Reestablecer</strong></a>
                                                     <br><br>
-                                                    If button doesn't work, copy the following token:
+                                                    Si el botón no funciona, copia el siguiente token:
                                                     <br><br>
                                                     <code>{user.ResetToken}</code>
                                                 </td>
@@ -545,9 +546,9 @@ namespace ap_auth_server.Services
                                             <tr>
                                                 <td bgcolor=""#f4f4f4"" align=""left"" style=""padding: 30px 30px 30px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 400; line-height: 18px;"">
                                                     <p style=""margin: 0;"">
-                                                        <a href=""{origin}"" target=""_blank"" style=""color: #111111; font-weight: 700;"">Home</a> –
-                                                        <a href=""{origin}/ContactUs"" target=""_blank"" style=""color: #111111; font-weight: 700;"">Support</a> –
-                                                        <a href=""{origin}/AboutUs"" target=""_blank"" style=""color: #111111; font-weight: 700;"">About Us</a>
+                                                        <a href=""{origin}"" target=""_blank"" style=""color: #111111; font-weight: 700;"">Inicio</a> –
+                                                        <a href=""{origin}/ContactUs"" target=""_blank"" style=""color: #111111; font-weight: 700;"">Soporte</a> –
+                                                        <a href=""{origin}/AboutUs"" target=""_blank"" style=""color: #111111; font-weight: 700;"">Sobre Nosotros</a>
                                                     </p>
                                                 </td>
                                             </tr>
@@ -574,7 +575,7 @@ namespace ap_auth_server.Services
 
             _emailService.Send(
                 to: user.Email,
-                subject: "AnimalPaws - Reset Password",
+                subject: "AnimalPaws - Reestablecer contraseña",
                 html: $@"{message}"
             );
         }

@@ -22,7 +22,6 @@ namespace ap_auth_server.Authorization
         public string GenerateToken(Foundation foundation);
         public string GenerateToken(Veterinary veterinary);
         public int? ValidateToken(string token);
-        public RefreshToken GenerateRefreshToken(string ipAddress);
     }
 
     public class JwtUtils : IJwtUtils
@@ -113,27 +112,6 @@ namespace ap_auth_server.Authorization
                 // return exception if validation fails
                 throw new AppException("Invalid token");
             }
-        }
-
-        public RefreshToken GenerateRefreshToken(string ipAddress)
-        {
-            var refreshToken = new RefreshToken
-            {
-                // token is a cryptographically strong random sequence of values
-                Token = Convert.ToHexString(RandomNumberGenerator.GetBytes(64)),
-                // token is valid for 7 days
-                Expire_At = DateTime.UtcNow.AddDays(7),
-                Created_At = DateTime.UtcNow,
-                Created_By_Ip = ipAddress
-            };
-
-            // ensure token is unique by checking against db
-            var tokenIsUnique = !_context.User.Any(a => a.RefreshTokens.Any(t => t.Token == refreshToken.Token));
-
-            if (!tokenIsUnique)
-                return GenerateRefreshToken(ipAddress);
-
-            return refreshToken;
         }
     }
 }

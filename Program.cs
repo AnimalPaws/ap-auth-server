@@ -24,7 +24,7 @@ var config = new MapperConfiguration(cfg => {
     cfg.CreateMap<UserRegisterRequest, User>();
     cfg.CreateMap<User, UserAuthenticateResponse>();
     cfg.CreateMap<FoundationRegisterRequest, Foundation>();
-    cfg.CreateMap<Foundation, UserAuthenticateResponse>();
+    cfg.CreateMap<Foundation, FoundationAuthenticateResponse>();
     cfg.CreateMap<VeterinaryRegisterRequest, Veterinary>();
     cfg.CreateMap<Veterinary, VeterinaryAuthenticateResponse>();
 });

@@ -55,15 +55,15 @@ namespace ap_auth_server.Controllers
         {
             try
             {
-                var response = (_context.User.Any(x => x.Email == model.Username) ||
-                    (_context.Foundation.Any(x => x.Email == model.Username)) ||
+                var response = (_context.User.Any(x => x.Email == model.Username) &&
+                    (_context.Foundation.Any(x => x.Email == model.Username)) &&
                     (_context.Veterinary.Any(x => x.Email == model.Username)));
 
                 // Accede al servicio y retorna los datos si el email es de USUARIO
                 if (response = _context.User.Any(x => x.Email == model.Username))
                 {
                     var user = _userService.Authenticate(model, IpAddress());
-                    SetTokenCookie(user.RefreshToken);
+                    SetTokenCookie(user.Token);
                     return Ok(new
                     {
                         message = "Logged successful",
@@ -74,7 +74,7 @@ namespace ap_auth_server.Controllers
                 else if (response = _context.Foundation.Any(x => x.Email == model.Username))
                 {
                     var foundation = _foundationService.Authenticate(model, IpAddress());
-                    SetTokenCookie(foundation.RefreshToken);
+                    SetTokenCookie(foundation.Token);
                     return Ok(new
                     {
                         message = "Logged successful",
@@ -85,7 +85,7 @@ namespace ap_auth_server.Controllers
                 else if (response = _context.Veterinary.Any(x => x.Email == model.Username))
                 {
                     var veterinary = _veterinaryService.Authenticate(model, IpAddress());
-                    SetTokenCookie(veterinary.RefreshToken);
+                    SetTokenCookie(veterinary.Token);
                     return Ok(new
                     {
                         message = "Logged successful",
@@ -277,61 +277,6 @@ namespace ap_auth_server.Controllers
         }
 
         // === TOKENS ===
-        
-        [AllowAnonymous]
-        [HttpPost("refresh-token/user")]
-        public ActionResult<UserAuthenticateResponse> UserRefreshToken()
-        {
-            var refreshToken = Request.Cookies["refreshToken"];
-            var response = (_userService.RefreshToken(refreshToken, IpAddress()));
-            SetTokenCookie(response.RefreshToken);
-            return Ok(response);
-        }
-
-        [AllowAnonymous]
-        [HttpPost("refresh-token/foundation")]
-        public ActionResult<FoundationAuthenticateResponse> FoundationRefreshToken()
-        {
-            var refreshToken = Request.Cookies["refreshToken"];
-            var response = (_foundationService.RefreshToken(refreshToken, IpAddress()));
-            SetTokenCookie(response.RefreshToken);
-            return Ok(response);
-        }
-
-        /*[AllowAnonymous]
-        [HttpPost("refresh-token/veterinary")]
-        public ActionResult<VeterinaryAuthenticateResponse> VeterinaryRefreshToken()
-        {
-            var refreshToken = Request.Cookies["refreshToken"];
-            var response = (_veterinaryService.RefreshToken(refreshToken, IpAddress()));
-            SetTokenCookie(response.RefreshToken);
-            return Ok(response);
-        }*/
-
-        [HttpPost("revoke-token")]
-        public IActionResult RevokeToken(RevokeTokenRequest model)
-        {
-            // accept token from request body or cookie
-            var token = model.Token ?? Request.Cookies["refreshToken"];
-
-            if (string.IsNullOrEmpty(token))
-                return BadRequest(new { message = "Token is required" });
-
-            // users can revoke their own tokens and admins can revoke any tokens
-            if (!User.OwnsToken(token) && User.Role != Role.Admin)
-                return Unauthorized(new { message = "Unauthorized" });
-
-            else if (!Foundation.OwnsToken(token) && User.Role != Role.Admin)
-                return Unauthorized(new { message = "Unauthorized" });
-
-            else if (!Veterinary.OwnsToken(token) && User.Role != Role.Admin)
-                return Unauthorized(new { message = "Unauthorized" });
-
-            _userService.RevokeToken(token, IpAddress());
-            _foundationService.RevokeToken(token, IpAddress());
-            //_veterinaryService.RevokeToken(token, IpAddress());
-            return Ok(new { message = "Token revoked" });
-        }
 
         [AllowAnonymous]
         [HttpPost("validate-reset-token")]
@@ -378,7 +323,7 @@ namespace ap_auth_server.Controllers
                 HttpOnly = true,
                 Expires = DateTime.UtcNow.AddDays(7)
             };
-            Response.Cookies.Append("refreshToken", token, cookieOptions);
+            Response.Cookies.Append("Token", token, cookieOptions);
         }
 
         private string IpAddress()

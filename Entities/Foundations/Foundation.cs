@@ -25,13 +25,6 @@ namespace ap_auth_server.Entities.Foundations
         public DateTime? PasswordReset { get; set; }
         public string? VerificationToken { get; set; }
         public string? ResetToken { get; set; }
-        [NotMapped]
-        public List<RefreshToken> RefreshTokens { get; set; }
-
-        public bool OwnsToken(string token)
-        {
-            return this.RefreshTokens?.Find(x => x.Token == token) != null;
-        }
         public int? Profile_Id { get; set; }
     }
 }

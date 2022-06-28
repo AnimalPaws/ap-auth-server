@@ -58,17 +58,17 @@ namespace ap_auth_server.Services
                 {
                     throw new AppException("That account doesn't exists");
                 }
-                //if (foundation.IsVerified)
-                //{
-                if (foundation == null || !BCryptNet.Verify(model.Password, foundation.Password))
+                if (foundation.IsVerified)
                 {
-                    throw new AppException("Invalid credentials, please try again");
+                    if (foundation == null || !BCryptNet.Verify(model.Password, foundation.Password))
+                    {
+                        throw new AppException("Invalid credentials, please try again");
+                    }
                 }
-                //}
-                /*else
+                else
                 {
                     throw new AppException("Please verify your email address");
-                }*/
+                }
 
                 // Si la validación es correcta, asigna token
                 var jwtToken = _jwtUtils.GenerateToken(foundation);
@@ -113,7 +113,7 @@ namespace ap_auth_server.Services
                 _context.Foundation_Profile.Add(profile);
                 _context.SaveChanges();
 
-                // Mapeo del usuario
+                // Mapeo del entidad
                 var foundation = _mapper.Map<Foundation>(model);
                 foundation.Password = BCryptNet.HashPassword(model.Password);
                 foundation.Created_At = DateTime.UtcNow;

@@ -149,7 +149,7 @@ namespace ap_auth_server.Controllers
         {
             try
             {
-                _veterinaryService.Register(model);
+                _veterinaryService.Register(model, Request.Headers["origin"]);
                 return Ok(new
                 {
                     message = "Registration successful. Check your email",
@@ -172,7 +172,8 @@ namespace ap_auth_server.Controllers
             try
             {
                 var response = (_context.User.Any(x => x.VerificationToken == model.Token) ||
-                    (_context.Foundation.Any(x => x.VerificationToken == model.Token)));
+                    (_context.Foundation.Any(x => x.VerificationToken == model.Token)) ||
+                    (_context.Veterinary.Any(x => x.VerificationToken == model.Token)));
 
                 if (response = _context.User.Any(x => x.VerificationToken == model.Token))
                 {
@@ -187,6 +188,16 @@ namespace ap_auth_server.Controllers
                 else if (response = _context.Foundation.Any(x => x.VerificationToken == model.Token))
                 {
                     _foundationService.VerifyEmail(model.Token);
+                    return Ok(new
+                    {
+                        message = "Verification successful, you can now login",
+                        Status = 200
+                    });
+                }
+
+                else if (response = _context.Veterinary.Any(x => x.VerificationToken == model.Token))
+                {
+                    _veterinaryService.VerifyEmail(model.Token);
                     return Ok(new
                     {
                         message = "Verification successful, you can now login",
@@ -209,8 +220,9 @@ namespace ap_auth_server.Controllers
         {
             try
             {
-                var response = (_context.User.Any(x => x.Email == model.Email) ||
-                    (_context.Foundation.Any(x => x.Email == model.Email)));
+                var response = (_context.User.Any(x => x.Email == model.Email) |
+                    (_context.Foundation.Any(x => x.Email == model.Email)) ||
+                    (_context.Veterinary.Any(x => x.Email == model.Email)));
 
                 if (response = _context.User.Any(x => x.Email == model.Email))
                 {
@@ -230,7 +242,17 @@ namespace ap_auth_server.Controllers
                         Status = 200
                     });
                 }
-                
+
+                else if (response = _context.Veterinary.Any(x => x.Email == model.Email))
+                {
+                    _veterinaryService.Recovery(model, Request.Headers["origin"]);
+                    return Ok(new
+                    {
+                        message = "Verification successful, you can now login",
+                        Status = 200
+                    });
+                }
+
                 return Ok(response);
             }
             catch (BadHttpRequestException ex)
@@ -246,7 +268,8 @@ namespace ap_auth_server.Controllers
             try
             {
                 var response = (_context.User.Any(x => x.ResetToken == model.Token) ||
-                    (_context.Foundation.Any(x => x.ResetToken == model.Token)));
+                    (_context.Foundation.Any(x => x.ResetToken == model.Token)) ||
+                    (_context.Veterinary.Any(x => x.ResetToken == model.Token)));
 
                 if (response = _context.User.Any(x => x.ResetToken == model.Token))
                 {
@@ -261,6 +284,16 @@ namespace ap_auth_server.Controllers
                 else if (response = _context.Foundation.Any(x => x.ResetToken == model.Token))
                 {
                     _foundationService.ResetPassword(model);
+                    return Ok(new
+                    {
+                        message = "Your password has been changed. Now you can login",
+                        Status = 200
+                    });
+                }
+
+                else if (response = _context.Veterinary.Any(x => x.ResetToken == model.Token))
+                {
+                    _veterinaryService.ResetPassword(model);
                     return Ok(new
                     {
                         message = "Your password has been changed. Now you can login",
@@ -285,7 +318,8 @@ namespace ap_auth_server.Controllers
             try
             {
                 var response = (_context.User.Any(x => x.ResetToken == model.Token) ||
-                    (_context.Foundation.Any(x => x.ResetToken == model.Token)));
+                    (_context.Foundation.Any(x => x.ResetToken == model.Token)) ||
+                    (_context.Veterinary.Any(x => x.ResetToken == model.Token)));
 
                 if (response = _context.User.Any(x => x.ResetToken == model.Token))
                 {
@@ -300,6 +334,16 @@ namespace ap_auth_server.Controllers
                 else if (response = _context.Foundation.Any(x => x.ResetToken == model.Token))
                 {
                     _foundationService.ValidateResetToken(model);
+                    return Ok(new
+                    {
+                        message = "Token is valid",
+                        Status = 200
+                    });
+                }
+
+                else if (response = _context.Veterinary.Any(x => x.ResetToken == model.Token))
+                {
+                    _veterinaryService.ValidateResetToken(model);
                     return Ok(new
                     {
                         message = "Token is valid",

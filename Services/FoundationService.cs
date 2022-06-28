@@ -17,9 +17,7 @@ namespace ap_auth_server.Services
     public interface IFoundationService
     {
         FoundationAuthenticateResponse Authenticate(AuthenticateRequest model, string ipAddress);
-        FoundationAuthenticateResponse RefreshToken(string token, string ipAddress);
         void Register(FoundationRegisterRequest model, string origin);
-        void RevokeToken(string token, string ipAddress);
         void VerifyEmail(string token);
         void Recovery(RecoveryPasswordRequest model, string origin);
         void ValidateResetToken(ValidateResetTokenRequest model);
@@ -60,34 +58,28 @@ namespace ap_auth_server.Services
                 {
                     throw new AppException("That account doesn't exists");
                 }
-                //if (foundation.IsVerified)
-                //{
-                if (foundation == null || !BCryptNet.Verify(model.Password, foundation.Password))
+                if (foundation.IsVerified)
                 {
-                    throw new AppException("Invalid credentials, please try again");
+                    if (foundation == null || !BCryptNet.Verify(model.Password, foundation.Password))
+                    {
+                        throw new AppException("Invalid credentials, please try again");
+                    }
                 }
-                //}
-                /*else
+                else
                 {
                     throw new AppException("Please verify your email address");
-                }*/
+                }
 
-                // Si la validación es correcta, asigna token y refresh token
+                // Si la validación es correcta, asigna token
                 var jwtToken = _jwtUtils.GenerateToken(foundation);
-                var refreshToken = _jwtUtils.GenerateRefreshToken(ipAddress);
-                foundation.RefreshTokens.Add(refreshToken);
                 var handler = new JwtSecurityTokenHandler();
                 var decodeValue = handler.ReadJwtToken(jwtToken);
-
-                // Elimina antiguos refresh token
-                RemoveOldRefreshTokens(foundation);
 
                 _context.Update(foundation);
                 _context.SaveChanges();
 
                 var response = _mapper.Map<FoundationAuthenticateResponse>(foundation);
                 response.Token = jwtToken;
-                response.RefreshToken = refreshToken.Token;
                 return response;
             }
             catch (Exception ex)
@@ -121,7 +113,7 @@ namespace ap_auth_server.Services
                 _context.Foundation_Profile.Add(profile);
                 _context.SaveChanges();
 
-                // Mapeo del usuario
+                // Mapeo del entidad
                 var foundation = _mapper.Map<Foundation>(model);
                 foundation.Password = BCryptNet.HashPassword(model.Password);
                 foundation.Created_At = DateTime.UtcNow;
@@ -143,57 +135,6 @@ namespace ap_auth_server.Services
         }
 
         // === TOKENS ===
-        public FoundationAuthenticateResponse RefreshToken(string token, string ipAddress)
-        {
-            var foundation = GetFoundationByRefreshToken(token);
-            var refreshToken = foundation.RefreshTokens.Single(x => x.Token == token);
-
-            if (refreshToken.IsRevoked)
-            {
-                // revoke all descendant tokens in case this token has been compromised
-                RevokeDescendantRefreshTokens(refreshToken, foundation, ipAddress, $"Attempted reuse of revoked ancestor token: {token}");
-                _context.Update(foundation);
-                _context.SaveChanges();
-            }
-
-            if (!refreshToken.IsActive)
-                throw new AppException("Invalid token");
-
-            // replace old refresh token with a new one (rotate token)
-            var newRefreshToken = RotateRefreshToken(refreshToken, ipAddress);
-            foundation.RefreshTokens.Add(newRefreshToken);
-
-
-            // remove old refresh tokens from account
-            RemoveOldRefreshTokens(foundation);
-
-            // save changes to db
-            _context.Update(foundation);
-            _context.SaveChanges();
-
-            // generate new jwt
-            var jwtToken = _jwtUtils.GenerateToken(foundation);
-
-            // return data in authenticate response object
-            var response = _mapper.Map<FoundationAuthenticateResponse>(foundation);
-            response.Token = jwtToken;
-            response.RefreshToken = newRefreshToken.Token;
-            return response;
-        }
-
-        public void RevokeToken(string token, string ipAddress)
-        {
-            var foundation = GetFoundationByRefreshToken(token);
-            var refreshToken = foundation.RefreshTokens.Single(x => x.Token == token);
-
-            if (!refreshToken.IsActive)
-                throw new AppException("Invalid token");
-
-            // revoke token and save
-            RevokeRefreshToken(refreshToken, ipAddress, "Revoked without replacement");
-            _context.Update(foundation);
-            _context.SaveChanges();
-        }
 
         public void ValidateResetToken(ValidateResetTokenRequest model)
         {
@@ -264,13 +205,6 @@ namespace ap_auth_server.Services
             }
         }
 
-        private Foundation GetFoundationByRefreshToken(string token)
-        {
-            var foundation = _context.Foundation.SingleOrDefault(u => u.RefreshTokens.Any(t => t.Token == token));
-            if (foundation == null) throw new AppException("Invalid token");
-            return foundation;
-        }
-
         private Foundation GetFoundationByResetToken(string token)
         {
             var foundation = _context.Foundation.SingleOrDefault(x =>
@@ -303,41 +237,6 @@ namespace ap_auth_server.Services
                 return GenerateVerificationToken();
 
             return token;
-        }
-
-        private RefreshToken RotateRefreshToken(RefreshToken refreshToken, string ipAddress)
-        {
-            var newRefreshToken = _jwtUtils.GenerateRefreshToken(ipAddress);
-            RevokeRefreshToken(refreshToken, ipAddress, "Replaced by new token", newRefreshToken.Token);
-            return newRefreshToken;
-        }
-
-        private void RemoveOldRefreshTokens(Foundation foundation)
-        {
-            foundation.RefreshTokens.RemoveAll(x =>
-                !x.IsActive &&
-                x.Created_At.AddDays(_appSettings.RefreshTokenTTL) <= DateTime.UtcNow);
-        }
-
-        private void RevokeDescendantRefreshTokens(RefreshToken refreshToken, Foundation foundation, string ipAddress, string reason)
-        {
-            // recursively traverse the refresh token chain and ensure all descendants are revoked
-            if (!string.IsNullOrEmpty(refreshToken.Replaced_By_Token))
-            {
-                var childToken = foundation.RefreshTokens.SingleOrDefault(x => x.Token == refreshToken.Replaced_By_Token);
-                if (childToken.IsActive)
-                    RevokeRefreshToken(childToken, ipAddress, reason);
-                else
-                    RevokeDescendantRefreshTokens(childToken, foundation, ipAddress, reason);
-            }
-        }
-
-        private void RevokeRefreshToken(RefreshToken token, string ipAddress, string reason = null, string replacedByToken = null)
-        {
-            token.Revoked = DateTime.UtcNow;
-            token.Revoked_By_Ip = ipAddress;
-            token.Reason_Revoked = reason;
-            token.Replaced_By_Token = replacedByToken;
         }
 
         private void SendVerificationEmail(Foundation foundation, string origin)

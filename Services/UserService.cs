@@ -58,17 +58,17 @@ namespace ap_auth_server.Services
                 {
                     throw new AppException("That account doesn't exists");
                 }
-                if (user.IsVerified)
+                //if (user.IsVerified)
+                //{
+                if (user == null || !BCryptNet.Verify(model.Password, user.Password))
                 {
-                    if (user == null || !BCryptNet.Verify(model.Password, user.Password))
-                    {
-                        throw new AppException("Invalid credentials, please try again");
-                    }
+                    throw new AppException("Invalid credentials, please try again");
                 }
-                else
+                //}
+                /*else
                 {
                     throw new AppException("Please verify your email address");
-                }
+                }*/
 
                 // Si la validación es correcta, asigna token
                 var jwtToken = _jwtUtils.GenerateToken(user);
@@ -248,7 +248,7 @@ namespace ap_auth_server.Services
             {
                 // origin exists if request sent from browser single page app
                 // so send link to verify via single page app
-                var verifyUrl = $"{origin}/auth/verify-email?token={user.VerificationToken}";
+                var verifyUrl = $"{origin}/api/auth/verify-email?token={user.VerificationToken}";
 
                 message = $@"
                         <body style=""background-color: #f4f4f4; margin: 0 !important; padding: 0 !important;"">
@@ -350,10 +350,9 @@ namespace ap_auth_server.Services
             {
                 // origin missing if request sent directly to api
                 // so send instructions to verify directly with api
-                message = $@"<marginheight=""0"" topmargin=""0"" marginwidth=""0"" style=""margin: 0px; background - color: #f2f3f8;"" leftmargin=""0"">
+                message = $@"
                             < h1>Verify Email</h1>
-                            <img src=""https://animalpaws.azurewebsites.net/assets/img/HomeScreen/logo_ap.png""</img>
-                            <p>Please use the below token to verify your email address with the <code>/accounts/verify-email</code> api route:</p>
+                            <p>Please use the below token to verify your email address with the <code>/api/auth/verify-email</code> api route:</p>
                             <p><code>{user.VerificationToken}</code></p>";
             }
 
@@ -369,7 +368,7 @@ namespace ap_auth_server.Services
             string message;
             if (!string.IsNullOrEmpty(origin))
             {
-                var resetUrl = $"{origin}/auth/reset-password?token={user.ResetToken}";
+                var resetUrl = $"{origin}/api/auth/reset-password?token={user.ResetToken}";
                 message = $@"
                         <body style=""background-color: #f4f4f4; margin: 0 !important; padding: 0 !important;"">
 
@@ -401,7 +400,7 @@ namespace ap_auth_server.Services
                                         <table border=""0"" cellpadding=""0"" cellspacing=""0"" width=""100%"" style=""max-width: 600px;"">
                                             <tr>
                                                 <td bgcolor=""#ffffff"" align=""center"" valign=""top"" style=""padding: 40px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #111111; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 4px; line-height: 48px;"">
-                                                    <h1 style=""font-size: 48px; font-weight: 400; margin: 0;"">RESET PASSWORD</h1>
+                                                    <h1 style=""font-size: 48px; font-weight: 400; margin: 0;"">REESTABLECER CONTRASEÑA</h1>
                                                 </td>
                                             </tr>
                                         </table>

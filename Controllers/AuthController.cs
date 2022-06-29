@@ -13,12 +13,14 @@ using ap_auth_server.Models.Jwt;
 using ap_auth_server.Models.Confirmation;
 using ap_auth_server.Models.Recovery;
 using ap_auth_server.Entities;
+using Microsoft.AspNetCore.Cors;
 
 namespace ap_auth_server.Controllers
 {
     [Authorize]
     [ApiController]
     [Route("api/auth")]
+    [EnableCors("AllowOrigin")]
 
     public class AuthController : BaseController
     {
@@ -64,11 +66,7 @@ namespace ap_auth_server.Controllers
                 {
                     var user = _userService.Authenticate(model, IpAddress());
                     SetTokenCookie(user.Token);
-                    return Ok(new
-                    {
-                        message = "Logged successful",
-                        Status = 200
-                    });
+                    return Ok(user);
                 }
                 // Accede al servicio y retorna los datos si el email es de FUNDACIÓN
                 else if (response = _context.Foundation.Any(x => x.Email == model.Username))
@@ -78,7 +76,8 @@ namespace ap_auth_server.Controllers
                     return Ok(new
                     {
                         message = "Logged successful",
-                        Status = 200
+                        Status = 200,
+                        Data = foundation
                     });
                 }
                 // Accede al servicio y retorna los datos si el email es de VETERINARIO
@@ -89,7 +88,8 @@ namespace ap_auth_server.Controllers
                     return Ok(new
                     {
                         message = "Logged successful",
-                        Status = 200
+                        Status = 200,
+                        Data = veterinary
                     });
                 }
                 return Ok(response);

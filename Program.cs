@@ -49,7 +49,19 @@ IMapper mapper = config.CreateMapper();
         // serialize enums as strings in api responses (e.g. Role)
         x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
-    services.AddCors();
+
+    services.AddCors(options =>
+    {
+        options.AddPolicy(name: "AllowOrigin",
+            policy =>
+            {
+                policy.WithOrigins("https://ap-auth-server.azurewebsites.net",
+                                    "https://animalpaws.azurewebsites.net")
+                                    .AllowAnyHeader()
+                                    .AllowAnyMethod();
+            });
+    });
+
     services.AddHttpContextAccessor();
     services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -90,11 +102,7 @@ app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseMiddleware<JwtMiddleware>();
 
 //
-app.UseCors(x => x
-        .SetIsOriginAllowed(origin => true)
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-        .AllowCredentials());
+app.UseCors("AllowOrigin");
 
 app.UseHttpsRedirection();
 

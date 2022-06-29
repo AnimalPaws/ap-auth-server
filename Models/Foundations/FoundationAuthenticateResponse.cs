@@ -17,11 +17,7 @@ namespace ap_auth_server.Models.Foundations
         public bool Is_Restricted { get; set; }
         public DateTime? Created_At { get; set; }
         public DateTime? Updated_At { get; set; }
-
         public int Profile_Id { get; set; }
         public string? Token { get; set; }
-
-        [JsonIgnore] // refresh token is returned in http only cookie
-        public string RefreshToken { get; set; }
     }
 }

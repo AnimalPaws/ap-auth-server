@@ -58,17 +58,17 @@ namespace ap_auth_server.Services
                 {
                     throw new AppException("That account doesn't exists");
                 }
-                if (veterinary.IsVerified)
+                //if (veterinary.IsVerified)
+                //{
+                if (veterinary == null || !BCryptNet.Verify(model.Password, veterinary.Password))
                 {
-                    if (veterinary == null || !BCryptNet.Verify(model.Password, veterinary.Password))
-                    {
-                        throw new AppException("Invalid credentials, please try again");
-                    }
+                    throw new AppException("Invalid credentials, please try again");
                 }
-                else
+                //}
+                /*else
                 {
                     throw new AppException("Please verify your email address");
-                }
+                }*/
 
                 // Si la validación es correcta, asigna token
                 var jwtToken = _jwtUtils.GenerateToken(veterinary);
@@ -246,7 +246,7 @@ namespace ap_auth_server.Services
             {
                 // origin exists if request sent from browser single page app
                 // so send link to verify via single page app
-                var verifyUrl = $"{origin}/auth/verify-email?token={veterinary.VerificationToken}";
+                var verifyUrl = $"{origin}/api/auth/verify-email?token={veterinary.VerificationToken}";
 
                 message = $@"
                         <body style=""background-color: #f4f4f4; margin: 0 !important; padding: 0 !important;"">
@@ -367,7 +367,7 @@ namespace ap_auth_server.Services
             string message;
             if (!string.IsNullOrEmpty(origin))
             {
-                var resetUrl = $"{origin}/auth/reset-password?token={veterinary.ResetToken}";
+                var resetUrl = $"{origin}/api/auth/reset-password?token={veterinary.ResetToken}";
                 message = $@"
                         <body style=""background-color: #f4f4f4; margin: 0 !important; padding: 0 !important;"">
 
@@ -399,7 +399,7 @@ namespace ap_auth_server.Services
                                         <table border=""0"" cellpadding=""0"" cellspacing=""0"" width=""100%"" style=""max-width: 600px;"">
                                             <tr>
                                                 <td bgcolor=""#ffffff"" align=""center"" valign=""top"" style=""padding: 40px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #111111; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 4px; line-height: 48px;"">
-                                                    <h1 style=""font-size: 48px; font-weight: 400; margin: 0;"">RESET PASSWORD</h1>
+                                                    <h1 style=""font-size: 48px; font-weight: 400; margin: 0;"">REESTABLECER CONTRASEÑA</h1>
                                                 </td>
                                             </tr>
                                         </table>

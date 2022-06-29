@@ -1,16 +1,16 @@
-﻿using AutoMapper;
-using BCryptNet = BCrypt.Net.BCrypt;
-using ap_auth_server.Helpers;
-using ap_auth_server.Authorization;
-using ap_auth_server.Models.Users;
-using ap_auth_server.Entities.Users;
-using ap_auth_server.Models;
-using ap_auth_server.Models.Recovery;
-using ap_auth_server.Models.Jwt;
-using System.Security.Cryptography;
+﻿using ap_auth_server.Authorization;
 using ap_auth_server.Entities;
+using ap_auth_server.Entities.Users;
+using ap_auth_server.Helpers;
+using ap_auth_server.Models;
+using ap_auth_server.Models.Jwt;
+using ap_auth_server.Models.Recovery;
+using ap_auth_server.Models.Users;
+using AutoMapper;
 using Microsoft.Extensions.Options;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
+using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace ap_auth_server.Services
 {
@@ -79,6 +79,7 @@ namespace ap_auth_server.Services
                 _context.SaveChanges();
 
                 var response = _mapper.Map<UserAuthenticateResponse>(user);
+
                 response.Token = jwtToken;
                 return response;
             }
@@ -105,22 +106,15 @@ namespace ap_auth_server.Services
                     throw new AppException("Username {0} is already taken, try with other", model.Username);
                 }
 
-                // Generación del perfil 
-                UserProfile profile = new UserProfile();
-                var picture = "https://i.imgur.com/JGmoHaP.jpeg";
-                profile.Picture = picture; 
-                profile.Biography = "En esta sección se mostrarán tus gustos e intereses.";
-                _context.User_Profile.Add(profile);
-                _context.SaveChanges();
-
                 // Mapeo del usuario
                 var user = _mapper.Map<User>(model);
-                model.Username.ToLower();
+                var picture = "https://i.imgur.com/JGmoHaP.jpeg";
+                user.Picture = picture;
+                user.Biography = "En esta sección se mostrarán tus gustos e intereses.";
                 user.Password = BCryptNet.HashPassword(model.Password);
                 user.Created_At = DateTime.UtcNow;
                 user.Role = Role.User;
                 user.VerificationToken = GenerateVerificationToken();
-                user.Profile_Id = profile.Id;
 
                 _context.User.Add(user);
                 _context.SaveChanges();

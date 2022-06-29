@@ -105,21 +105,15 @@ namespace ap_auth_server.Services
                     throw new AppException("Foundation {0} already exists", model.Name);
                 }
 
-                // Generación del perfil 
-                FoundationProfile profile = new FoundationProfile();
-                var picture = "https://i.imgur.com/JGmoHaP.jpeg";
-                profile.Picture = picture;
-                profile.About = "En esta sección se mostrará la información acerca de tu fundación.";
-                _context.Foundation_Profile.Add(profile);
-                _context.SaveChanges();
-
-                // Mapeo del entidad
+                // Mapeo de la entidad
                 var foundation = _mapper.Map<Foundation>(model);
+                var picture = "https://i.imgur.com/JGmoHaP.jpeg";
+                foundation.Picture = picture;
+                foundation.About = "En esta sección se mostrará la información acerca de tu fundación.";
                 foundation.Password = BCryptNet.HashPassword(model.Password);
                 foundation.Created_At = DateTime.UtcNow;
                 foundation.Role = Role.Foundation;
                 foundation.VerificationToken = GenerateVerificationToken();
-                foundation.Profile_Id = profile.Id;
 
                 _context.Foundation.Add(foundation);
                 _context.SaveChanges();

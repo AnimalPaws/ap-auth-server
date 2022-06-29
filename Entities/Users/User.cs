@@ -20,6 +20,10 @@ namespace ap_auth_server.Entities.Users
         public string Department { get; set; }
         public string City { get; set; }
         public Role Role { get; set; }
+        public string? Picture { get; set; }
+        public string? Biography { get; set; }
+        public int? Notification_Id { get; set; }
+        public int? Pet_Id { get; set; }
         public DateTime? Verified { get; set; }
         public bool IsVerified { get; set; }
         public bool Is_Blocked { get; set; }

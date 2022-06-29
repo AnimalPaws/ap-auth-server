@@ -50,17 +50,7 @@ IMapper mapper = config.CreateMapper();
         x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
-    services.AddCors(options =>
-    {
-        options.AddPolicy(name: "AllowOrigin",
-            policy =>
-            {
-                policy.WithOrigins("https://ap-auth-server.azurewebsites.net",
-                                    "https://animalpaws.azurewebsites.net")
-                                    .AllowAnyHeader()
-                                    .AllowAnyMethod();
-            });
-    });
+    services.AddCors();
 
     services.AddHttpContextAccessor();
     services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -102,9 +92,17 @@ app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseMiddleware<JwtMiddleware>();
 
 //
-app.UseCors("AllowOrigin");
+app.UseStaticFiles();
 
 app.UseHttpsRedirection();
+
+app.UseRouting();
+
+app.UseCors(x => x
+        .SetIsOriginAllowed(origin => true)
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials());
 
 app.UseAuthorization();
 

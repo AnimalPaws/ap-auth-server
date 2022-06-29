@@ -20,7 +20,7 @@ namespace ap_auth_server.Controllers
     [Authorize]
     [ApiController]
     [Route("api/auth")]
-    [EnableCors("AllowOrigin")]
+    [EnableCors]
 
     public class AuthController : BaseController
     {

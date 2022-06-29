@@ -105,21 +105,15 @@ namespace ap_auth_server.Services
                     throw new AppException("Veterinary {0} already exists", model.Name);
                 }
 
-                // Generación del perfil 
-                VeterinaryProfile profile = new VeterinaryProfile();
-                var picture = "https://i.imgur.com/JGmoHaP.jpeg";
-                profile.Picture = picture;
-                profile.About = "En esta sección se mostrará la información acerca de tu veterinaria.";
-                _context.Veterinary_Profile.Add(profile);
-                _context.SaveChanges();
-
                 // Mapeo de la entidad
                 var veterinary = _mapper.Map<Veterinary>(model);
+                var picture = "https://i.imgur.com/JGmoHaP.jpeg";
+                veterinary.Picture = picture;
+                veterinary.About = "En esta sección se mostrará la información acerca de tu veterinaria.";
                 veterinary.Password = BCryptNet.HashPassword(model.Password);
                 veterinary.Created_At = DateTime.UtcNow;
                 veterinary.Role = Role.Veterinary;
                 veterinary.VerificationToken = GenerateVerificationToken();
-                veterinary.Profile_Id = profile.Id;
 
                 _context.Veterinary.Add(veterinary);
                 _context.SaveChanges();

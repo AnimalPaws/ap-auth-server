@@ -1,10 +1,11 @@
-﻿using System.Text.Json.Serialization;
+﻿using ap_auth_server.Entities.Users;
+using System.Text.Json.Serialization;
 
 namespace ap_auth_server.Models.Users
 {
     public class UserAuthenticateResponse
     {
-        /*public int? Id { get; set; }
+        public int? Id { get; set; }
         public string? First_Name { get; set; }
         public string? Middle_Name { get; set; }
         public string? Surname { get; set; }
@@ -17,13 +18,13 @@ namespace ap_auth_server.Models.Users
         public string? Department { get; set; }
         public string? City { get; set; }
         public string? Role { get; set; }
+        public string? Picture { get; set; }
+        public string? Biography { get; set; }
         public bool IsVerified { get; set; }
         public bool Is_Blocked { get; set; }
         public bool Is_Restricted { get; set; }
         public DateTime? Created_At { get; set; }
         public DateTime? Updated_At { get; set; }
-
-        public int Profile_Id { get; set; }*/
         public string? Token { get; set; }
     }
 }
